@@ -1,4 +1,5 @@
 mod routes;
+mod templates;
 
 use axum::{routing::get, Router};
 use routes::{crates_show, root};
