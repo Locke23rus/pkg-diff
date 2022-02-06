@@ -1,5 +1,23 @@
 {% extends "layout.html" %} {% block body %}
-<p>{{ pkg }}</p>
-<p>{{ version }}</p>
-<code><pre>{{ diff }}</pre></code>
+<div class="container">
+	<p>{{ pkg }}</p>
+	<p>{{ version }}</p>
+
+	{% for file in files %}
+	<div class="file">
+		<div class="file-header">
+			<span class="file-status file-status-{{ file.status }}">{{ file.status }}</span> {{file.name}}
+		</div>
+
+		<code>
+			<pre>
+				{% for chunk in file.chunks %}
+					{{ chunk.header }}
+				{% endfor %} 
+			</pre
+			>
+		</code>
+	</div>
+	{% endfor %}
+</div>
 {% endblock %}
