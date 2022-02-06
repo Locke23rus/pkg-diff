@@ -1,3 +1,4 @@
+mod diff;
 mod routes;
 mod templates;
 
