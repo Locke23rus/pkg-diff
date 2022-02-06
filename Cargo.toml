@@ -8,5 +8,7 @@ edition = "2021"
 [dependencies]
 axum = "0.4.3"
 tokio = { version = "1.15.0", features = ["full"] }
-minijinja = { version = "0.12.0", features = ["source"] }
+minijinja = { version = "0.13.0", features = ["source"] }
 lazy_static = "1.4.0"
+patch = "0.6.0"
+serde = { version = "1.0.136", features = ["derive"] }
