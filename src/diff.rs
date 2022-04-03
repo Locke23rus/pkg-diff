@@ -1,12 +1,34 @@
-use patch::{Hunk, Line, Patch};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Chunk {
-	header: String,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum Line {
+	/// A line added to the old file in the new file
+	Add {
+		text: String,
+		from_line_number: String,
+		to_line_number: String,
+	},
+	/// A line removed from the old file in the new file
+	Remove {
+		text: String,
+		from_line_number: String,
+		to_line_number: String,
+	},
+	/// A line provided for context in the diff (unchanged); from both the old and the new file
+	Context {
+		text: String,
+		from_line_number: String,
+		to_line_number: String,
+	},
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Chunk {
+	header: String,
+	lines: Vec<Line>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct File {
 	name: String,
 	status: String,
@@ -14,21 +36,24 @@ pub struct File {
 }
 
 impl Chunk {
-	pub fn from_hunk(hunk: Hunk) -> Self {
+	pub fn from_hunk(hunk: patch::Hunk) -> Self {
 		let context: &str;
 		let old_lines_count = hunk
 			.clone()
 			.lines
 			.into_iter()
 			.filter(|line| match line {
-				Line::Add(_) => false,
+				patch::Line::Add(_) => false,
 				_ => true,
 			})
 			.count() as u64;
 
+		let mut patch_lines = hunk.lines;
+
 		if old_lines_count > hunk.old_range.count {
-			if let Line::Context(ctx) = hunk.lines[0] {
+			if let patch::Line::Context(ctx) = patch_lines[0] {
 				context = ctx;
+				patch_lines.remove(0);
 			} else {
 				context = "";
 			}
@@ -41,12 +66,55 @@ impl Chunk {
 			hunk.old_range.start, hunk.old_range.count, hunk.new_range.start, hunk.new_range.count, context
 		);
 
-		Self { header }
+		let mut from_line_number = hunk.old_range.start;
+		let mut to_line_number = hunk.new_range.start;
+
+		let lines: Vec<Line> = patch_lines
+			.into_iter()
+			.map(|patch_line| match patch_line {
+				patch::Line::Add(text) => {
+					let line = Line::Add {
+						text: text.to_string(),
+						from_line_number: "".to_string(),
+						to_line_number: to_line_number.to_string(),
+					};
+
+					to_line_number += 1;
+
+					line
+				}
+				patch::Line::Context(text) => {
+					let line = Line::Context {
+						text: text.to_string(),
+						from_line_number: from_line_number.to_string(),
+						to_line_number: to_line_number.to_string(),
+					};
+
+					from_line_number += 1;
+					to_line_number += 1;
+
+					line
+				}
+				patch::Line::Remove(text) => {
+					let line = Line::Remove {
+						text: text.to_string(),
+						from_line_number: from_line_number.to_string(),
+						to_line_number: "".to_string(),
+					};
+
+					from_line_number += 1;
+
+					line
+				}
+			})
+			.collect();
+
+		Self { header, lines }
 	}
 }
 
 impl File {
-	pub fn from_patch(patch: Patch) -> Self {
+	pub fn from_patch(patch: patch::Patch) -> Self {
 		let status: String;
 		let name: String;
 
