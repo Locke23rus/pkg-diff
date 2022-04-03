@@ -1,21 +1,25 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(untagged)]
 pub enum Line {
 	/// A line added to the old file in the new file
 	Add {
+		kind: String,
 		text: String,
 		from_line_number: String,
 		to_line_number: String,
 	},
 	/// A line removed from the old file in the new file
 	Remove {
+		kind: String,
 		text: String,
 		from_line_number: String,
 		to_line_number: String,
 	},
 	/// A line provided for context in the diff (unchanged); from both the old and the new file
 	Context {
+		kind: String,
 		text: String,
 		from_line_number: String,
 		to_line_number: String,
@@ -51,8 +55,8 @@ impl Chunk {
 		let mut patch_lines = hunk.lines;
 
 		if old_lines_count > hunk.old_range.count {
-			if let patch::Line::Context(ctx) = patch_lines[0] {
-				context = ctx;
+			if let patch::Line::Context(text) = patch_lines[0] {
+				context = text;
 				patch_lines.remove(0);
 			} else {
 				context = "";
@@ -74,6 +78,7 @@ impl Chunk {
 			.map(|patch_line| match patch_line {
 				patch::Line::Add(text) => {
 					let line = Line::Add {
+						kind: "add".to_string(),
 						text: text.to_string(),
 						from_line_number: "".to_string(),
 						to_line_number: to_line_number.to_string(),
@@ -85,6 +90,7 @@ impl Chunk {
 				}
 				patch::Line::Context(text) => {
 					let line = Line::Context {
+						kind: "context".to_string(),
 						text: text.to_string(),
 						from_line_number: from_line_number.to_string(),
 						to_line_number: to_line_number.to_string(),
@@ -97,6 +103,7 @@ impl Chunk {
 				}
 				patch::Line::Remove(text) => {
 					let line = Line::Remove {
+						kind: "remove".to_string(),
 						text: text.to_string(),
 						from_line_number: from_line_number.to_string(),
 						to_line_number: "".to_string(),

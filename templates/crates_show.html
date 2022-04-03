@@ -1,23 +1,31 @@
-{% extends "layout.html" %} 
-{% block body %}
-	<div class="container">
-		<p>{{ pkg }}</p>
-		<p>{{ version }}</p>
+{% extends "layout.html" %} {% block body %}
+<div class="container">
+	<p>{{ pkg }}</p>
+	<p>{{ version }}</p>
 
-		{% for file in files %}
-			<div class="file">
-				<div class="file-header">
-					<span class="file-status file-status-{{ file.status }}">{{ file.status }}</span> {{file.name}}
-				</div>
+	{% for file in files %}
+	<div class="file">
+		<div class="file-header">
+			<span class="file-status file-status-{{ file.status }}">{{ file.status }}</span>{{ file.name }}
+		</div>
 
-				<code>
-					<pre>
-						{% for chunk in file.chunks %}
-							{{ chunk.header }}
-						{% endfor %} 
-					</pre>
-				</code>
-			</div>
-		{% endfor %}
+		<div>
+			<table class="diff">
+				{% for chunk in file.chunks %}
+				<tr class="diff-line line-type-chunk-header">
+					<td class="line-number" colspan="2"></td>
+					<td class="line-text">{{ chunk.header }}</td>
+				</tr>
+				{% for line in chunk.lines %}
+				<tr class="diff-line line-type-{{ line.kind }}">
+					<td class="line-number">{{ line.from_line_number }}</td>
+					<td class="line-number">{{ line.to_line_number }}</td>
+					<td class="line-text">{%- if line.text|length -%}{{ line.text }}{%- else -%}<br />{%- endif -%}</td>
+				</tr>
+				{% endfor %} {% endfor %}
+			</table>
+		</div>
 	</div>
+	{% endfor %}
+</div>
 {% endblock %}

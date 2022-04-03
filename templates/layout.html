@@ -67,8 +67,13 @@
 				color: #fff;
 				margin-top: auto;
 			}
-			pre {
-				background-color: #fff;
+			table {
+				width: 100%;
+				border-spacing: 0;
+			}
+			td {
+				border: 0;
+				padding: 0;
 			}
 			.container {
 				margin: 0 auto;
@@ -80,9 +85,9 @@
 				border-radius: 3px;
 				margin-bottom: 1rem;
 				background-color: #fff;
+				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 			}
 			.file-header {
-				font-family: monospace;
 				font-size: 13px;
 				padding: 10px;
 				background-color: #fff;
@@ -92,9 +97,11 @@
 				color: #999;
 				border: 1px solid #999;
 				border-radius: 3px;
-				padding: 0 3px;
+				padding: 0 0.25rem;
 				display: inline-block;
 				text-transform: uppercase;
+				margin-right: 1rem;
+				user-select: none;
 			}
 			.file-status-removed {
 				color: #cf222e;
@@ -103,6 +110,57 @@
 			.file-status-added {
 				color: #2da44e;
 				border-color: #2da44e;
+			}
+			.diff-line {
+				font-size: 12px;
+				line-height: 20px;
+			}
+			.line-type-chunk-header {
+				background-color: #ddf4ff;
+				color: #57606a;
+			}
+			.line-type-context {
+				background-color: #fff;
+			}
+			.line-number {
+				width: 1%;
+				min-width: 35px;
+				padding-left: 0.5rem;
+				padding-right: 0.5rem;
+				color: #6e7781;
+				text-align: right;
+				white-space: nowrap;
+				user-select: none;
+			}
+			.line-type-add .line-number {
+				background-color: #ccffd8;
+				color: #24292f;
+			}
+			.line-type-remove .line-number {
+				background-color: #ffd7d5;
+				color: #24292f;
+			}
+			.line-text {
+				white-space: pre;
+			}
+			.line-type-add .line-text {
+				background-color: #e6ffec;
+			}
+			.line-type-remove .line-text {
+				background-color: #ffebe9;
+			}
+			.line-type-chunk-header .line-text::before,
+			.line-type-context .line-text::before {
+				content: "   ";
+			}
+			.line-type-add .line-text::before {
+				content: " + ";
+			}
+			.line-type-remove .line-text::before {
+				content: " - ";
+			}
+			.line-text::selection {
+				background: rgba(84, 174, 255, 0.4);
 			}
 		</style>
 	</head>
