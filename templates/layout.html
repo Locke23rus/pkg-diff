@@ -209,6 +209,7 @@
 		<footer>
 			<div class="container">footer</div>
 		</footer>
+
 		<script>
 			/*
 				Make it possible to click line numbers to update the address bar to a
@@ -218,12 +219,11 @@
 				document.getElementById(location.hash.replace("#", ""))?.classList?.add("selected");
 			}
 
-			const lines = document.querySelectorAll(".line-number");
-			lines.forEach((line) => {
-				line.addEventListener("click", (e) => {
-					const parent = line.parentNode;
+			document.querySelectorAll(".line-number").forEach((lineNumber) => {
+				lineNumber.addEventListener("click", (e) => {
+					const parent = lineNumber.parentNode;
 
-					if (parent && parent.id) {
+					if (parent?.id) {
 						document.querySelectorAll(".diff-line.selected").forEach((selectedLine) => {
 							selectedLine.classList.remove("selected");
 						});
@@ -235,12 +235,10 @@
 				});
 			});
 
-			const fileToggles = document.querySelectorAll(".collapse-diff");
-			fileToggles.forEach((toggle) => {
+			document.querySelectorAll(".collapse-diff").forEach((toggle) => {
 				toggle.addEventListener("click", (e) => {
-					const header = toggle.parentNode;
-					const file = header.parentNode;
-					file.classList.toggle("collapsed") && scrollIfNeeded(header);
+					const parent = toggle.parentNode.parentNode;
+					file.classList.toggle("collapsed") && scrollIfNeeded(parent);
 				});
 			});
 
