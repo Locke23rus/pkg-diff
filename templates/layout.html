@@ -141,7 +141,7 @@
 				fill: currentColor;
 			}
 			.collapsed .chevron {
-				transform: rotate(90deg);
+				transform: rotate(-90deg);
 			}
 			.diff-line {
 				font-size: 12px;
@@ -238,7 +238,7 @@
 			document.querySelectorAll(".collapse-diff").forEach((toggle) => {
 				toggle.addEventListener("click", (e) => {
 					const parent = toggle.parentNode.parentNode;
-					file.classList.toggle("collapsed") && scrollIfNeeded(parent);
+					parent.classList.toggle("collapsed") && scrollIfNeeded(parent);
 				});
 			});
 
