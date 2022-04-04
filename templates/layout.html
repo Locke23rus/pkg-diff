@@ -85,7 +85,7 @@
 				margin-bottom: 1rem;
 				background-color: #fff;
 				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-				contain: content;
+				contain: paint;
 			}
 			.file-header {
 				position: -webkit-sticky;
@@ -97,6 +97,7 @@
 				font-size: 13px;
 				background-color: #fff;
 				border-bottom: 1px solid #d0d7de;
+				overflow: hidden;
 			}
 			.collapsed .file-header {
 				border: 0;
@@ -120,6 +121,9 @@
 			.file-status-added {
 				color: #096622;
 				border-color: #096622;
+			}
+			.file-diff {
+				overflow-y: hidden;
 			}
 			.collapsed .file-diff {
 				display: none;
