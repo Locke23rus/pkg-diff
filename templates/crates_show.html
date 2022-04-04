@@ -1,9 +1,8 @@
-{% extends "layout.html" %} {% block body %}
+{%- extends "layout.html" -%} {%- block body -%}
 <div class="container">
-	<p>{{ pkg }}</p>
-	<p>{{ version }}</p>
-
-	{% for file in files %}
+	<p>{{- pkg -}}</p>
+	<p>{{- version -}}</p>
+	{%- for file in files -%}
 	<div class="file">
 		<div class="file-header">
 			<button type="button" class="collapse-diff" aria-label="Toggle diff contents">
@@ -14,29 +13,28 @@
 					></path>
 				</svg>
 			</button>
-			<span class="file-status file-status-{{ file.status }}">{{ file.status }}</span>{{ file.name }}
+			<span class="file-status file-status-{{- file.status -}}">{{- file.status -}}</span>{{- file.name -}}
 		</div>
-
 		<div class="file-diff">
 			<table>
-				{% for chunk in file.chunks %}
+				{%- for chunk in file.chunks -%}
 				<tr class="diff-line line-type-chunk-header">
 					<td class="line-number" colspan="2"></td>
-					<td class="line-text">{{ chunk.header }}</td>
+					<td class="line-text">{{- chunk.header -}}</td>
 				</tr>
-				{% for line in chunk.lines %}
+				{%- for line in chunk.lines -%}
 				<tr
 					id="diff-{{- file.digest -}}-{{- line.from_line_number -}}-{{- line.to_line_number -}}"
 					class="diff-line line-type-{{ line.kind }}"
 				>
-					<td class="line-number">{{ line.from_line_number }}</td>
-					<td class="line-number">{{ line.to_line_number }}</td>
-					<td class="line-text">{%- if line.text|length -%}{{ line.text }}{%- else -%}<br />{%- endif -%}</td>
+					<td class="line-number">{{- line.from_line_number -}}</td>
+					<td class="line-number">{{- line.to_line_number -}}</td>
+					<td class="line-text">{%- if line.text|length -%}{{- line.text -}}{%- else -%}<br />{%- endif -%}</td>
 				</tr>
-				{% endfor %} {% endfor %}
+				{%- endfor -%} {%- endfor -%}
 			</table>
 		</div>
 	</div>
-	{% endfor %}
+	{%- endfor -%}
 </div>
-{% endblock %}
+{%- endblock -%}
