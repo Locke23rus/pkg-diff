@@ -87,6 +87,7 @@
 				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 			}
 			.file-header {
+				position: -webkit-sticky;
 				position: sticky;
 				top: 0;
 				display: flex;
@@ -100,22 +101,24 @@
 				border: 0;
 			}
 			.file-status {
-				color: #999;
-				border: 1px solid #999;
+				color: #505862;
+				border: 1px solid #505862;
 				border-radius: 3px;
 				padding: 0 0.25rem;
 				display: inline-block;
 				text-transform: uppercase;
-				margin-right: 1rem;
+				margin-right: 0.75rem;
+				-ms-user-select: none;
+				-webkit-user-select: none;
 				user-select: none;
 			}
 			.file-status-removed {
-				color: #cf222e;
-				border-color: #cf222e;
+				color: #b1101c;
+				border-color: #b1101c;
 			}
 			.file-status-added {
-				color: #2da44e;
-				border-color: #2da44e;
+				color: #096622;
+				border-color: #096622;
 			}
 			.collapsed .file-diff {
 				display: none;
@@ -123,7 +126,7 @@
 			.collapse-diff {
 				width: 24px;
 				height: 20px;
-				margin-right: 0.5rem;
+				margin-right: 0.25rem;
 				display: inline-block;
 				color: #57606a;
 				background: transparent;
@@ -150,7 +153,7 @@
 			}
 			.line-type-chunk-header {
 				background-color: #ddf4ff;
-				color: #57606a;
+				color: #495059;
 			}
 			.line-type-context {
 				background-color: #fff;
@@ -160,19 +163,19 @@
 				min-width: 35px;
 				padding-left: 0.5rem;
 				padding-right: 0.5rem;
-				color: #6e7781;
+				color: #24292f;
 				text-align: right;
 				white-space: nowrap;
+				-ms-user-select: none;
+				-webkit-user-select: none;
 				user-select: none;
 				cursor: pointer;
 			}
 			.line-type-add .line-number {
 				background-color: #ccffd8;
-				color: #24292f;
 			}
 			.line-type-remove .line-number {
 				background-color: #ffd7d5;
-				color: #24292f;
 			}
 			.line-text {
 				white-space: pre;
@@ -212,7 +215,7 @@
 				link directly to that line.
 			*/
 			if (location.hash) {
-				document.getElementById(location.hash.replace("#", "")).classList.add("selected");
+				document.getElementById(location.hash.replace("#", ""))?.classList?.add("selected");
 			}
 
 			const lines = document.querySelectorAll(".line-number");
