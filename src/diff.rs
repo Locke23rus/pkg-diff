@@ -37,6 +37,7 @@ pub struct File {
 	name: String,
 	status: String,
 	chunks: Vec<Chunk>,
+	digest: String,
 }
 
 impl Chunk {
@@ -144,7 +145,13 @@ impl File {
 		}
 
 		let chunks: Vec<Chunk> = patch.hunks.into_iter().map(|hunk| Chunk::from_hunk(hunk)).collect();
+		let digest: String = format!("{:x}", md5::compute(name.clone()));
 
-		Self { name, status, chunks }
+		Self {
+			name,
+			status,
+			chunks,
+			digest,
+		}
 	}
 }

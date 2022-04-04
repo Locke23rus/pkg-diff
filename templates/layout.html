@@ -29,8 +29,7 @@
 			img,
 			picture,
 			video,
-			canvas,
-			svg {
+			canvas {
 				display: block;
 				max-width: 100%;
 			}
@@ -81,17 +80,22 @@
 				max-width: 1280px;
 			}
 			.file {
-				border: 1px solid #ddd;
+				border: 1px solid transparent;
 				border-radius: 3px;
 				margin-bottom: 1rem;
 				background-color: #fff;
 				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 			}
 			.file-header {
+				display: flex;
+				align-items: center;
+				padding: 10px 10px 10px 6px;
 				font-size: 13px;
-				padding: 10px;
 				background-color: #fff;
-				border-bottom: 0.1rem solid #e1e1e1;
+				border-bottom: 1px solid #d0d7de;
+			}
+			.collapsed .file-header {
+				border: 0;
 			}
 			.file-status {
 				color: #999;
@@ -111,9 +115,36 @@
 				color: #2da44e;
 				border-color: #2da44e;
 			}
+			.collapsed .file-diff {
+				display: none;
+			}
+			.collapse-diff {
+				width: 24px;
+				height: 20px;
+				margin-right: 0.5rem;
+				display: inline-block;
+				color: #57606a;
+				background: transparent;
+				border: 0;
+				box-shadow: none;
+				cursor: pointer;
+			}
+			.collapse-diff:hover {
+				color: #0969da;
+			}
+			.chevron {
+				fill: currentColor;
+			}
+			.collapsed .chevron {
+				transform: rotate(90deg);
+			}
 			.diff-line {
 				font-size: 12px;
 				line-height: 20px;
+			}
+			.diff-line.selected .line-number,
+			.diff-line.selected .line-text {
+				background-color: #fff8c5 !important;
 			}
 			.line-type-chunk-header {
 				background-color: #ddf4ff;
@@ -131,6 +162,7 @@
 				text-align: right;
 				white-space: nowrap;
 				user-select: none;
+				cursor: pointer;
 			}
 			.line-type-add .line-number {
 				background-color: #ccffd8;
@@ -172,5 +204,44 @@
 		<footer>
 			<div class="container">footer</div>
 		</footer>
+		<script>
+			/*
+				Make it possible to click line numbers to update the address bar to a
+				link directly to that line.
+			*/
+			if (location.hash) {
+				document.getElementById(location.hash.replace("#", "")).classList.add("selected");
+			}
+
+			const lines = document.querySelectorAll(".line-number");
+			lines.forEach((line) => {
+				line.addEventListener("click", (e) => {
+					const parent = line.parentNode;
+
+					if (parent && parent.id) {
+						document.querySelectorAll(".diff-line.selected").forEach((selectedLine) => {
+							selectedLine.classList.remove("selected");
+						});
+
+						parent.classList.add("selected");
+
+						history.replaceState(null, null, "#" + parent.id);
+					}
+				});
+			});
+
+			const fileToggles = document.querySelectorAll(".collapse-diff");
+			fileToggles.forEach((toggle) => {
+				toggle.addEventListener("click", (e) => {
+					const header = toggle.parentNode;
+					const file = header.parentNode;
+					file.classList.toggle("collapsed") && scrollIfNeeded(header);
+				});
+			});
+
+			const scrollIfNeeded = (elem) => {
+				elem.getBoundingClientRect().top < 0 && elem.scrollIntoView(true);
+			};
+		</script>
 	</body>
 </html>

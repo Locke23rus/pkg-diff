@@ -12,3 +12,4 @@ minijinja = { version = "0.14.1", features = ["source"] }
 lazy_static = "1.4.0"
 patch = "0.6.0"
 serde = { version = "1.0.136", features = ["derive"] }
+md5 = "0.7.0"
