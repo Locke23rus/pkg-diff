@@ -54,13 +54,10 @@
 					"Helvetica Neue", sans-serif;
 			}
 			header {
-				height: 48px;
+				height: 64px;
+				min-height: 64px;
 				display: flex;
 				align-items: center;
-				padding-left: 1.5rem;
-				color: #fff;
-				font-size: 24px;
-				font-weight: 600;
 			}
 			footer {
 				color: #fff;
@@ -78,6 +75,19 @@
 				margin: 0 auto;
 				width: 1280px;
 				max-width: 1280px;
+			}
+			.logo {
+				display: flex;
+				align-items: center;
+				color: #fff;
+				text-decoration: none;
+				font-size: 24px;
+				font-weight: 600;
+				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+			}
+			.logo svg {
+				margin: auto 0.75rem;
+				fill: currentColor;
 			}
 			.file {
 				border: 1px solid transparent;
@@ -208,7 +218,21 @@
 	</head>
 	<body>
 		<header>
-			<div class="container">Pkg Diff</div>
+			<div class="container">
+				<a href="/" class="logo">
+					<svg viewBox="0 0 32 32" width="48" height="48">
+						<g>
+							<path
+								d="m25.41 7.09-9-4a1 1 0 0 0-.82 0l-9 4A1 1 0 0 0 6 8v8.56A8.69 8.69 0 0 0 8.91 23l6.43 5.71a1 1 0 0 0 1.32 0L23.09 23A8.69 8.69 0 0 0 26 16.56V8a1 1 0 0 0-.59-.91ZM24 16.56a6.67 6.67 0 0 1-2.24 5L16 26.66l-5.76-5.12a6.67 6.67 0 0 1-2.24-5V8.65l8-3.56 8 3.56Z"
+							/>
+							<path
+								d="M14.21 11.29a1 1 0 0 0-1.42 1.42l1.8 1.79-1.8 1.79a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l1.79-1.8 1.79 1.8a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42l-1.8-1.79 1.8-1.79a1 1 0 0 0-1.42-1.42L16 13.09Z"
+							/>
+						</g>
+					</svg>
+					Pkg Diff
+				</a>
+			</div>
 		</header>
 		<main>{%- block body -%}{%- endblock -%}</main>
 		<footer>
