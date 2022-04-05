@@ -4,7 +4,7 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Pkg Diff</title>
+		<title>{%- block title -%}{%- endblock -%}Pkg Diff</title>
 		<style>
 			/*
 				Josh's Custom CSS Reset
@@ -96,6 +96,12 @@
 			}
 			.logo-diff {
 				color: lightgreen;
+			}
+			.pkg-info {
+				margin: 1.5rem 0;
+				text-align: center;
+				font-size: 2rem;
+				font-weight: 700;
 			}
 			.file {
 				border: 1px solid #d0d7de;
