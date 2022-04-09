@@ -16,12 +16,15 @@ pub async fn root() -> impl IntoResponse {
 
 pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, String)>) -> impl IntoResponse {
 	let diff = include_str!("../examples/minijinja.diff");
+	let yanked = false;
 
 	match Patch::from_multiple(diff) {
 		Ok(patches) => {
 			let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
 			let template = get_template("inspect.html");
-			let html = template.render(context! { registry, pkg, version, files }).unwrap();
+			let html = template
+				.render(context! { registry, pkg, version, yanked, files })
+				.unwrap();
 			Html(html).into_response()
 		}
 		Err(err) => (StatusCode::BAD_REQUEST, format!("Failed to parse diff: {}", err)).into_response(),
@@ -30,12 +33,16 @@ pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, Strin
 
 pub async fn compare(Path((registry, pkg, v1, v2)): Path<(String, String, String, String)>) -> impl IntoResponse {
 	let diff = include_str!("../examples/git.diff");
+	let v1_yanked = true;
+	let v2_yanked = false;
 
 	match Patch::from_multiple(diff) {
 		Ok(patches) => {
 			let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
 			let template = get_template("compare.html");
-			let html = template.render(context! { registry, pkg, v1, v2, files }).unwrap();
+			let html = template
+				.render(context! { registry, pkg, v1, v1_yanked, v2, v2_yanked, files })
+				.unwrap();
 			Html(html).into_response()
 		}
 		Err(err) => (StatusCode::BAD_REQUEST, format!("Failed to parse diff: {}", err)).into_response(),

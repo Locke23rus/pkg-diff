@@ -1,6 +1,6 @@
 {%- extends "layout.html" -%} {%- block title -%}{{ pkg }} v{{ version }} · {% endblock %} {%- block body -%}
 <section>
-	<div class="pkg-info">{{ pkg }} v{{ version }}</div>
+	<div class="pkg-info">{{ pkg }} v{{ version }}{%- if yanked -%} <sup class="yanked">yanked</sup>{%- endif -%}</div>
 	{%- for file in files -%}
 	<div class="file">
 		<div class="file-header">
