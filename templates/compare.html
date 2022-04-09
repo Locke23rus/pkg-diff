@@ -1,6 +1,7 @@
-{%- extends "layout.html" -%} {%- block title -%}{{ pkg }} · v{{ version }} · {% endblock %} {%- block body -%}
+{%- extends "layout.html" -%} {%- block title -%}{{ pkg }} v{{ v1 }} &longrightarrow; v{{ v2 }} · {% endblock %} {%-
+block body -%}
 <section>
-	<div class="pkg-info">{{ pkg }} v{{ version }}</div>
+	<div class="pkg-info">{{ pkg }} v{{ v1 }} &longrightarrow; v{{ v2 }}</div>
 	{%- for file in files -%}
 	<div class="file">
 		<div class="file-header">
