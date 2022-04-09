@@ -1,5 +1,5 @@
 {%- extends "layout.html" -%} {%- block title -%}{{ pkg }} · v{{ version }} · {% endblock %} {%- block body -%}
-<div class="container">
+<section>
 	<div class="pkg-info">{{ pkg }} v{{ version }}</div>
 	{%- for file in files -%}
 	<div class="file">
@@ -36,5 +36,5 @@
 		</div>
 	</div>
 	{%- endfor -%}
-</div>
+</section>
 {%- endblock -%}

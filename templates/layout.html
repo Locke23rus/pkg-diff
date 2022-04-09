@@ -6,10 +6,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{%- block title -%}{%- endblock -%}Pkg Diff</title>
 		<style>
-			/*
-				Josh's Custom CSS Reset
-				https://www.joshwcomeau.com/css/custom-css-reset/
-			*/
 			*,
 			*::before,
 			*::after {
@@ -17,6 +13,7 @@
 			}
 			* {
 				margin: 0;
+				padding: 0;
 			}
 			html,
 			body {
@@ -25,13 +22,6 @@
 			body {
 				line-height: 1.5;
 				-webkit-font-smoothing: antialiased;
-			}
-			img,
-			picture,
-			video,
-			canvas {
-				display: block;
-				max-width: 100%;
 			}
 			input,
 			button,
@@ -45,7 +35,6 @@
 			h3 {
 				overflow-wrap: break-word;
 			}
-			/* Custom styles */
 			body {
 				display: flex;
 				flex-direction: column;
@@ -67,13 +56,13 @@
 			footer svg {
 				margin-right: 0.5rem;
 			}
-			footer a {
+			footer > a {
 				display: inline-flex;
 				align-items: center;
 				color: #333;
 				text-decoration: none;
 			}
-			footer a:hover {
+			footer > a:hover {
 				color: #0969da;
 			}
 			table {
@@ -82,12 +71,16 @@
 			}
 			td {
 				border: 0;
-				padding: 0;
 			}
-			.container {
+			section {
 				margin: 0 auto;
 				width: 1280px;
 				max-width: 1280px;
+			}
+			h1 {
+				font-size: 24px;
+				font-weight: 600;
+				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 			}
 			.logo {
 				width: fit-content;
@@ -96,15 +89,11 @@
 				align-items: center;
 				color: #fff;
 				text-decoration: none;
-				font-size: 24px;
-				font-weight: 600;
-				font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
 			}
-			.logo svg {
-				fill: currentColor;
+			.logo > svg {
+				margin-right: 1rem;
 			}
 			.logo-pkg {
-				margin: 0 0.75rem;
 				color: lightcoral;
 			}
 			.logo-diff {
@@ -130,7 +119,7 @@
 				top: 0;
 				display: flex;
 				align-items: center;
-				padding: 10px 10px 10px 6px;
+				padding: 10px;
 				font-size: 13px;
 				background-color: #f6f8fa;
 				border-bottom: 1px solid #d0d7de;
@@ -169,9 +158,8 @@
 				display: none;
 			}
 			.collapse-diff {
-				width: 24px;
-				height: 20px;
-				display: inline-block;
+				width: 16px;
+				height: 16px;
 				color: #57606a;
 				background: transparent;
 				border: 0;
@@ -191,8 +179,8 @@
 				font-size: 12px;
 				line-height: 20px;
 			}
-			.diff-line.selected .line-number,
-			.diff-line.selected .line-text {
+			.diff-line.selected > .line-number,
+			.diff-line.selected > .line-text {
 				background-color: #fff8c5 !important;
 			}
 			.line-type-chunk-header {
@@ -205,8 +193,7 @@
 			.line-number {
 				width: 1%;
 				min-width: 35px;
-				padding-left: 0.5rem;
-				padding-right: 0.5rem;
+				padding: 0 0.5rem;
 				color: #24292f;
 				text-align: right;
 				white-space: nowrap;
@@ -215,29 +202,32 @@
 				user-select: none;
 				cursor: pointer;
 			}
-			.line-type-add .line-number {
+			.line-type-chunk-header > .line-number {
+				cursor: default;
+			}
+			.line-type-add > .line-number {
 				background-color: #ccffd8;
 			}
-			.line-type-remove .line-number {
+			.line-type-remove > .line-number {
 				background-color: #ffd7d5;
 			}
 			.line-text {
 				white-space: pre;
 			}
-			.line-type-add .line-text {
+			.line-type-add > .line-text {
 				background-color: #e6ffec;
 			}
-			.line-type-remove .line-text {
+			.line-type-remove > .line-text {
 				background-color: #ffebe9;
 			}
-			.line-type-chunk-header .line-text::before,
-			.line-type-context .line-text::before {
+			.line-type-chunk-header > .line-text::before,
+			.line-type-context > .line-text::before {
 				content: "   ";
 			}
-			.line-type-add .line-text::before {
+			.line-type-add > .line-text::before {
 				content: " + ";
 			}
-			.line-type-remove .line-text::before {
+			.line-type-remove > .line-text::before {
 				content: " - ";
 			}
 			.line-text::selection {
@@ -247,7 +237,7 @@
 	</head>
 	<body>
 		<header>
-			<div class="container">
+			<section>
 				<a href="/" class="logo">
 					<svg viewBox="0 0 16 16" width="36" height="36" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
 						<path
@@ -256,10 +246,12 @@
 							d="M3 1h11l1 1v5.3a3.21 3.21 0 0 0-1-.3V2H9v10.88L7.88 14H3l-1-1V2l1-1zm0 12h5V2H3v11zm10.379-4.998a2.53 2.53 0 0 0-1.19.348h-.03a2.51 2.51 0 0 0-.799 3.53L9 14.23l.71.71 2.35-2.36c.325.22.7.358 1.09.4a2.47 2.47 0 0 0 1.14-.13 2.51 2.51 0 0 0 1-.63 2.46 2.46 0 0 0 .58-1 2.63 2.63 0 0 0 .07-1.15 2.53 2.53 0 0 0-1.35-1.81 2.53 2.53 0 0 0-1.211-.258zm.24 3.992a1.5 1.5 0 0 1-.979-.244 1.55 1.55 0 0 1-.56-.68 1.49 1.49 0 0 1-.08-.86 1.49 1.49 0 0 1 1.18-1.18 1.49 1.49 0 0 1 .86.08c.276.117.512.311.68.56a1.5 1.5 0 0 1-1.1 2.324z"
 						/>
 					</svg>
-					<span class="logo-pkg">Pkg</span>
-					<span class="logo-diff">Diff</span>
+					<h1>
+						<span class="logo-pkg">Pkg</span>
+						<span class="logo-diff">Diff</span>
+					</h1>
 				</a>
-			</div>
+			</section>
 		</header>
 		<main>{%- block body -%}{%- endblock -%}</main>
 
