@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use minijinja::{Environment, Source, Template};
+use minijinja::{Environment, Template};
 
 lazy_static! {
 	static ref ENV: Environment<'static> = create_env();
@@ -7,9 +7,14 @@ lazy_static! {
 
 fn create_env() -> Environment<'static> {
 	let mut env = Environment::new();
-	let mut source = Source::new();
-	source.load_from_path("templates", &["html"]).unwrap();
-	env.set_source(source);
+	env.add_template("compare.html", include_str!("../templates/compare.html"))
+		.unwrap();
+	env.add_template("inspect.html", include_str!("../templates/inspect.html"))
+		.unwrap();
+	env.add_template("layout.html", include_str!("../templates/layout.html"))
+		.unwrap();
+	env.add_template("root.html", include_str!("../templates/root.html"))
+		.unwrap();
 	env
 }
 
