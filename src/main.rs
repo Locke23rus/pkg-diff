@@ -1,4 +1,5 @@
 mod diff;
+mod registries;
 mod routes;
 mod templates;
 
