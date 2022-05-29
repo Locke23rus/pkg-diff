@@ -10,6 +10,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use crates_index::Crate;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
+use sha2::{Digest, Sha256};
 
 #[async_trait]
 pub trait Registry {
@@ -43,7 +44,7 @@ impl Registry for CratesRegistry {
 				}
 				None => bail!("Version not found"),
 			},
-			None => bail!("Package not found"),
+			None => bail!("Crate not found"),
 		}
 	}
 }
@@ -54,20 +55,17 @@ impl CratesRegistry {
 		Ok(index.crate_(&pkg))
 	}
 
-	async fn download_crate(pkg: String, version: String, checksum: &[u8; 32]) -> Result<Bytes> {
+	async fn download_and_verify_crate(pkg: String, version: String, checksum: &[u8; 32]) -> Result<Bytes> {
 		let download_url = format!("https://crates.io/api/v1/crates/{}/{}/download", pkg, version);
-		println!("Downloading crate `{}={}` from {}", pkg, version, download_url);
 		let response = reqwest::get(&download_url).await?;
+		let bytes = response.bytes().await?;
+		let hash = Sha256::digest(bytes.as_ref());
 
-		let content_length = response.content_length();
-		let bytes: Bytes = response.bytes().await?;
-
-		println!(
-			"Download size: {}",
-			content_length.map_or("<unknown>".into(), |cl| format!("{} bytes", cl))
-		);
-		println!("Crate `{} v{}` downloaded successfully", pkg, version);
-		Ok(bytes)
+		if hash[..] == checksum[..] {
+			Ok(bytes)
+		} else {
+			bail!("Crate {} v{} checksum mismatch", pkg, version)
+		}
 	}
 
 	async fn download_and_extract_crate(
@@ -77,10 +75,8 @@ impl CratesRegistry {
 		version: String,
 		checksum: &[u8; 32],
 	) -> Result<()> {
-		let crate_bytes = Self::download_crate(name.clone(), version.clone(), checksum).await?;
-
-		println!("Extracting crate archive to {}/", tmp_dir.display());
-		let gzip = flate2::read::GzDecoder::new(&crate_bytes[..]);
+		let crate_bytes = Self::download_and_verify_crate(name.clone(), version.clone(), checksum).await?;
+		let gzip = flate2::read::GzDecoder::new(crate_bytes.as_ref());
 		let mut archive = tar::Archive::new(gzip);
 		archive.unpack(tmp_dir.clone())?;
 
