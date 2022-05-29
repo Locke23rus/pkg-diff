@@ -6,7 +6,11 @@ use axum::{
 use minijinja::context;
 use patch::Patch;
 
-use crate::{diff::File, registries, templates::get_template};
+use crate::{
+	diff::File,
+	registries::{get_registry, Registry},
+	templates::get_template,
+};
 
 pub async fn root() -> impl IntoResponse {
 	let template = get_template("root.html");
@@ -15,19 +19,24 @@ pub async fn root() -> impl IntoResponse {
 }
 
 pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, String)>) -> impl IntoResponse {
-	match registries::get_registry(registry) {
-		Ok(registry) => match registries::inspect_package(registry, pkg, version) {
-			Ok(ctx) => {
-				let template = get_template("inspect.html");
-				match template.render(ctx) {
-					Ok(html) => Html(html).into_response(),
-					Err(e) => (
-						StatusCode::INTERNAL_SERVER_ERROR,
-						format!("Failed to render template: {}", e),
-					)
-						.into_response(),
+	match get_registry(registry) {
+		Ok(registry) => match registry.inspect(pkg.clone(), version.clone()).await {
+			Ok((diff, yanked)) => match Patch::from_multiple(&diff) {
+				Ok(patches) => {
+					let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
+					let ctx = context! { pkg, version, yanked, files };
+					let template = get_template("inspect.html");
+					match template.render(ctx) {
+						Ok(html) => Html(html).into_response(),
+						Err(e) => (
+							StatusCode::INTERNAL_SERVER_ERROR,
+							format!("Failed to render template: {e}"),
+						)
+							.into_response(),
+					}
 				}
-			}
+				Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("Failed to parse diff: {e}")).into_response(),
+			},
 			Err(e) => (StatusCode::INTERNAL_SERVER_ERROR, format!("{e}")).into_response(),
 		},
 		Err(_) => (StatusCode::NOT_FOUND, "Page not found").into_response(),
