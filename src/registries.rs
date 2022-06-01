@@ -1,8 +1,7 @@
 use std::{
 	env,
-	fs::{self, rename},
-	io,
 	path::PathBuf,
+	process::{Command, Stdio},
 };
 
 use anyhow::{bail, Result};
@@ -11,6 +10,7 @@ use bytes::Bytes;
 use crates_index::Crate;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
+use tokio::fs::{create_dir_all, read_to_string, rename};
 
 #[async_trait]
 pub trait Registry {
@@ -22,24 +22,24 @@ struct CratesRegistry {}
 #[async_trait]
 impl Registry for CratesRegistry {
 	async fn inspect(&self, pkg: String, version: String) -> Result<(String, bool)> {
-		match Self::find_crate(pkg.clone())? {
+		match Self::find_crate(&pkg)? {
 			Some(crate_) => match crate_.versions().iter().find(|v| v.version() == version) {
 				Some(crate_version) => {
-					let tmp_dir = create_tmp_dir()?;
-					let crate_dir = tmp_dir.join("b");
-					println!("{}", crate_dir.display());
+					let tmp_dir = create_tmp_dir().await?;
+					create_dir_all(tmp_dir.join("a")).await?;
 
 					Self::download_and_extract_crate(
-						tmp_dir.clone(),
-						crate_dir.clone(),
-						pkg.to_string(),
-						version.to_string(),
+						&tmp_dir,
+						tmp_dir.join("b"),
+						&pkg,
+						&version,
 						crate_version.checksum(),
 					)
 					.await?;
 
-					let diff = include_str!("../examples/minijinja.diff").to_owned();
+					let diff = git_diff(&tmp_dir).await?;
 					let yanked = crate_version.is_yanked();
+
 					Ok((diff, yanked))
 				}
 				None => bail!("Version not found"),
@@ -50,12 +50,12 @@ impl Registry for CratesRegistry {
 }
 
 impl CratesRegistry {
-	fn find_crate(pkg: String) -> Result<Option<Crate>> {
+	fn find_crate(pkg: &str) -> Result<Option<Crate>> {
 		let index = crates_index::Index::new_cargo_default()?;
-		Ok(index.crate_(&pkg))
+		Ok(index.crate_(pkg))
 	}
 
-	async fn download_and_verify_crate(pkg: String, version: String, checksum: &[u8; 32]) -> Result<Bytes> {
+	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
 		let download_url = format!("https://crates.io/api/v1/crates/{}/{}/download", pkg, version);
 		let response = reqwest::get(&download_url).await?;
 		let bytes = response.bytes().await?;
@@ -69,19 +69,19 @@ impl CratesRegistry {
 	}
 
 	async fn download_and_extract_crate(
-		tmp_dir: PathBuf,
+		tmp_dir: &PathBuf,
 		destination: PathBuf,
-		name: String,
-		version: String,
+		name: &str,
+		version: &str,
 		checksum: &[u8; 32],
 	) -> Result<()> {
-		let crate_bytes = Self::download_and_verify_crate(name.clone(), version.clone(), checksum).await?;
+		let crate_bytes = Self::download_and_verify_crate(name, version, checksum).await?;
 		let gzip = flate2::read::GzDecoder::new(crate_bytes.as_ref());
 		let mut archive = tar::Archive::new(gzip);
-		archive.unpack(tmp_dir.clone())?;
+		archive.unpack(tmp_dir)?;
 
 		let from = tmp_dir.join(format!("{}-{}", name, version));
-		rename(from, destination)?;
+		rename(from, destination).await?;
 
 		Ok(())
 	}
@@ -94,9 +94,9 @@ pub fn get_registry(registry: String) -> Result<impl Registry> {
 	}
 }
 
-fn create_tmp_dir() -> io::Result<PathBuf> {
+async fn create_tmp_dir() -> Result<PathBuf> {
 	let dir = env::temp_dir().join(format!("pkg-diff-{}", random_string()));
-	fs::create_dir_all(dir.clone())?;
+	create_dir_all(&dir).await?;
 	Ok(dir)
 }
 
@@ -106,4 +106,26 @@ fn random_string() -> String {
 		.take(12)
 		.map(char::from)
 		.collect()
+}
+
+async fn git_diff(tmp_dir: &PathBuf) -> Result<String> {
+	let diff_path = tmp_dir.join("pkg.diff");
+	Command::new("git")
+		.current_dir(tmp_dir)
+		.stdout(Stdio::null())
+		.stderr(Stdio::null())
+		.arg("-c")
+		.arg("diff.algorithm=histogram")
+		.arg("diff")
+		.arg("--no-color")
+		.arg("--no-index")
+		.arg("--no-prefix")
+		.arg("--output")
+		.arg(diff_path.as_os_str())
+		.arg("a")
+		.arg("b")
+		.output()?;
+
+	let diff = read_to_string(diff_path).await?;
+	Ok(diff)
 }
