@@ -14,14 +14,14 @@ use tokio::fs::{create_dir_all, read_to_string, rename};
 
 #[async_trait]
 pub trait Registry {
-	async fn inspect(&self, pkg: String, version: String) -> Result<(String, bool)>;
+	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)>;
 }
 
 struct CratesRegistry {}
 
 #[async_trait]
 impl Registry for CratesRegistry {
-	async fn inspect(&self, pkg: String, version: String) -> Result<(String, bool)> {
+	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)> {
 		match Self::find_crate(&pkg)? {
 			Some(crate_) => match crate_.versions().iter().find(|v| v.version() == version) {
 				Some(crate_version) => {
@@ -87,8 +87,8 @@ impl CratesRegistry {
 	}
 }
 
-pub fn get_registry(registry: String) -> Result<impl Registry> {
-	match registry.as_str() {
+pub fn get_registry(registry: &str) -> Result<impl Registry> {
+	match registry {
 		"crates" => Ok(CratesRegistry {}),
 		_ => bail!("Unknown registry"),
 	}

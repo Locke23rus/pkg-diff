@@ -19,8 +19,8 @@ pub async fn root() -> impl IntoResponse {
 }
 
 pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, String)>) -> impl IntoResponse {
-	match get_registry(registry) {
-		Ok(registry) => match registry.inspect(pkg.clone(), version.clone()).await {
+	match get_registry(&registry) {
+		Ok(registry) => match registry.inspect(&pkg, &version).await {
 			Ok((diff, yanked)) => match Patch::from_multiple(&diff) {
 				Ok(patches) => {
 					let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
