@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 use tokio::{
 	fs::{create_dir_all, read_to_string, remove_dir_all, rename},
 	process::Command,
+	try_join,
 };
 
 #[async_trait]
@@ -58,8 +59,10 @@ impl Registry for CratesRegistry {
 
 		let tmp_dir = create_tmp_dir().await?;
 
-		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("a"), &pkg, &v1, crate_v1.checksum()).await?;
-		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &v2, crate_v2.checksum()).await?;
+		try_join!(
+			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("a"), &pkg, &v1, crate_v1.checksum()),
+			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &v2, crate_v2.checksum()),
+		)?;
 
 		let diff = git_diff(&tmp_dir).await?;
 		remove_dir_all(tmp_dir).await?;
