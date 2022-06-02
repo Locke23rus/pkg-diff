@@ -4,7 +4,7 @@ use std::{
 	process::{Command, Stdio},
 };
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
 use bytes::Bytes;
 use crates_index::Crate;
@@ -22,37 +22,29 @@ struct CratesRegistry {}
 #[async_trait]
 impl Registry for CratesRegistry {
 	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)> {
-		match Self::find_crate(&pkg)? {
-			Some(crate_) => match crate_.versions().iter().find(|v| v.version() == version) {
-				Some(crate_version) => {
-					let tmp_dir = create_tmp_dir().await?;
-					create_dir_all(tmp_dir.join("a")).await?;
+		let crate_ = Self::find_crate(&pkg)?;
+		let crate_version = crate_
+			.versions()
+			.iter()
+			.find(|v| v.version() == version)
+			.ok_or(anyhow!("Crate {} v{} not found", pkg, version))?;
 
-					Self::download_and_extract_crate(
-						&tmp_dir,
-						tmp_dir.join("b"),
-						&pkg,
-						&version,
-						crate_version.checksum(),
-					)
-					.await?;
+		let tmp_dir = create_tmp_dir().await?;
+		create_dir_all(tmp_dir.join("a")).await?;
 
-					let diff = git_diff(&tmp_dir).await?;
-					let yanked = crate_version.is_yanked();
+		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &version, crate_version.checksum()).await?;
 
-					Ok((diff, yanked))
-				}
-				None => bail!("Version not found"),
-			},
-			None => bail!("Crate not found"),
-		}
+		let diff = git_diff(&tmp_dir).await?;
+		let yanked = crate_version.is_yanked();
+
+		Ok((diff, yanked))
 	}
 }
 
 impl CratesRegistry {
-	fn find_crate(pkg: &str) -> Result<Option<Crate>> {
+	fn find_crate(pkg: &str) -> Result<Crate> {
 		let index = crates_index::Index::new_cargo_default()?;
-		Ok(index.crate_(pkg))
+		index.crate_(pkg).ok_or(anyhow!("Crate {} not found", pkg))
 	}
 
 	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
