@@ -15,6 +15,7 @@ use tokio::fs::{create_dir_all, read_to_string, rename};
 #[async_trait]
 pub trait Registry {
 	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)>;
+	async fn compare(&self, pkg: &str, v1: &str, v2: &str) -> Result<(String, bool, bool)>;
 }
 
 struct CratesRegistry {}
@@ -35,9 +36,34 @@ impl Registry for CratesRegistry {
 		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &version, crate_version.checksum()).await?;
 
 		let diff = git_diff(&tmp_dir).await?;
-		let yanked = crate_version.is_yanked();
 
-		Ok((diff, yanked))
+		Ok((diff, crate_version.is_yanked()))
+	}
+
+	async fn compare(&self, pkg: &str, v1: &str, v2: &str) -> Result<(String, bool, bool)> {
+		let crate_ = Self::find_crate(&pkg)?;
+		let crate_v1 =
+			crate_
+				.versions()
+				.iter()
+				.find(|v| v.version() == v1)
+				.ok_or(anyhow!("Crate {} v{} not found", pkg, v1))?;
+
+		let crate_v2 =
+			crate_
+				.versions()
+				.iter()
+				.find(|v| v.version() == v2)
+				.ok_or(anyhow!("Crate {} v{} not found", pkg, v2))?;
+
+		let tmp_dir = create_tmp_dir().await?;
+
+		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("a"), &pkg, &v1, crate_v1.checksum()).await?;
+		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &v2, crate_v2.checksum()).await?;
+
+		let diff = git_diff(&tmp_dir).await?;
+
+		Ok((diff, crate_v1.is_yanked(), crate_v2.is_yanked()))
 	}
 }
 
