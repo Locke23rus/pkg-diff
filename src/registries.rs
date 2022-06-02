@@ -10,7 +10,7 @@ use bytes::Bytes;
 use crates_index::Crate;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
-use tokio::fs::{create_dir_all, read_to_string, rename};
+use tokio::fs::{create_dir_all, read_to_string, remove_dir_all, rename};
 
 #[async_trait]
 pub trait Registry {
@@ -36,6 +36,7 @@ impl Registry for CratesRegistry {
 		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &version, crate_version.checksum()).await?;
 
 		let diff = git_diff(&tmp_dir).await?;
+		remove_dir_all(tmp_dir).await?;
 
 		Ok((diff, crate_version.is_yanked()))
 	}
@@ -62,6 +63,7 @@ impl Registry for CratesRegistry {
 		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &v2, crate_v2.checksum()).await?;
 
 		let diff = git_diff(&tmp_dir).await?;
+		remove_dir_all(tmp_dir).await?;
 
 		Ok((diff, crate_v1.is_yanked(), crate_v2.is_yanked()))
 	}
