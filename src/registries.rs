@@ -1,8 +1,4 @@
-use std::{
-	env,
-	path::PathBuf,
-	process::{Command, Stdio},
-};
+use std::{env, path::PathBuf, process::Stdio};
 
 use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
@@ -10,7 +6,10 @@ use bytes::Bytes;
 use crates_index::Crate;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
-use tokio::fs::{create_dir_all, read_to_string, remove_dir_all, rename};
+use tokio::{
+	fs::{create_dir_all, read_to_string, remove_dir_all, rename},
+	process::Command,
+};
 
 #[async_trait]
 pub trait Registry {
@@ -144,7 +143,8 @@ async fn git_diff(tmp_dir: &PathBuf) -> Result<String> {
 		.arg(diff_path.as_os_str())
 		.arg("a")
 		.arg("b")
-		.output()?;
+		.status()
+		.await?;
 
 	let diff = read_to_string(diff_path).await?;
 	Ok(diff)
