@@ -137,6 +137,8 @@ async fn git_diff(tmp_dir: &PathBuf) -> Result<String> {
 		.stdout(Stdio::null())
 		.stderr(Stdio::null())
 		.arg("-c")
+		.arg("core.quotepath=false")
+		.arg("-c")
 		.arg("diff.algorithm=histogram")
 		.arg("diff")
 		.arg("--no-color")
