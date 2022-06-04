@@ -15,6 +15,8 @@ fn create_env() -> Environment<'static> {
 		.unwrap();
 	env.add_template("index.html", include_str!("../templates/index.html"))
 		.unwrap();
+	env.add_template("error.html", include_str!("../templates/error.html"))
+		.unwrap();
 	env
 }
 
