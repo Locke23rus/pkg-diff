@@ -13,7 +13,7 @@ fn create_env() -> Environment<'static> {
 		.unwrap();
 	env.add_template("layout.html", include_str!("../templates/layout.html"))
 		.unwrap();
-	env.add_template("root.html", include_str!("../templates/root.html"))
+	env.add_template("index.html", include_str!("../templates/index.html"))
 		.unwrap();
 	env
 }

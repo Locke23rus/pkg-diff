@@ -12,8 +12,8 @@ use crate::{
 	templates::get_template,
 };
 
-pub async fn root() -> impl IntoResponse {
-	let template = get_template("root.html");
+pub async fn index() -> impl IntoResponse {
+	let template = get_template("index.html");
 	match template.render("") {
 		Ok(html) => Html(html).into_response(),
 		Err(e) => (
