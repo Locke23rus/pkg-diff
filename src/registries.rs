@@ -25,13 +25,13 @@ struct CratesRegistry {}
 #[async_trait]
 impl Registry for CratesRegistry {
 	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)> {
-		let crate_ = Self::find_crate(&pkg)?;
+		let crate_ = Self::find_crate(pkg)?;
 		let crate_version = Self::find_version(&crate_, version)?;
 
 		let tmp_dir = create_tmp_dir().await?;
 		create_dir_all(tmp_dir.join("a")).await?;
 
-		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &version, crate_version.checksum()).await?;
+		Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), pkg, version, crate_version.checksum()).await?;
 
 		let diff = git_diff(&tmp_dir).await?;
 		remove_dir_all(tmp_dir).await?;
@@ -40,19 +40,19 @@ impl Registry for CratesRegistry {
 	}
 
 	async fn compare(&self, pkg: &str, v1: &str, v2: &str) -> Result<(String, bool, bool)> {
-		let crate_ = Self::find_crate(&pkg)?;
+		let crate_ = Self::find_crate(pkg)?;
 		let crate_v1 = Self::find_version(&crate_, v1)?;
 		let crate_v2 = Self::find_version(&crate_, v2)?;
 
 		let tmp_dir = create_tmp_dir().await?;
 
 		try_join!(
-			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("a"), &pkg, &v1, crate_v1.checksum()),
-			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), &pkg, &v2, crate_v2.checksum()),
+			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("a"), pkg, v1, crate_v1.checksum()),
+			Self::download_and_extract_crate(&tmp_dir, tmp_dir.join("b"), pkg, v2, crate_v2.checksum()),
 		)?;
 
 		let diff = git_diff(&tmp_dir).await?;
-		remove_dir_all(tmp_dir).await?;
+		remove_dir_all(&tmp_dir).await?;
 
 		Ok((diff, crate_v1.is_yanked(), crate_v2.is_yanked()))
 	}
