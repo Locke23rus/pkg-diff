@@ -3,7 +3,7 @@ use std::{env, path::PathBuf, process::Stdio};
 use anyhow::{anyhow, bail, Result};
 use async_trait::async_trait;
 use bytes::Bytes;
-use crates_index::Crate;
+use crates_index::{Crate, Version};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use sha2::{Digest, Sha256};
 use tokio::{
@@ -26,11 +26,7 @@ struct CratesRegistry {}
 impl Registry for CratesRegistry {
 	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)> {
 		let crate_ = Self::find_crate(&pkg)?;
-		let crate_version = crate_
-			.versions()
-			.iter()
-			.find(|v| v.version() == version)
-			.ok_or(anyhow!("Crate {} v{} not found", pkg, version))?;
+		let crate_version = Self::find_version(&crate_, version)?;
 
 		let tmp_dir = create_tmp_dir().await?;
 		create_dir_all(tmp_dir.join("a")).await?;
@@ -45,19 +41,8 @@ impl Registry for CratesRegistry {
 
 	async fn compare(&self, pkg: &str, v1: &str, v2: &str) -> Result<(String, bool, bool)> {
 		let crate_ = Self::find_crate(&pkg)?;
-		let crate_v1 =
-			crate_
-				.versions()
-				.iter()
-				.find(|v| v.version() == v1)
-				.ok_or(anyhow!("Crate {} v{} not found", pkg, v1))?;
-
-		let crate_v2 =
-			crate_
-				.versions()
-				.iter()
-				.find(|v| v.version() == v2)
-				.ok_or(anyhow!("Crate {} v{} not found", pkg, v2))?;
+		let crate_v1 = Self::find_version(&crate_, v1)?;
+		let crate_v2 = Self::find_version(&crate_, v2)?;
 
 		let tmp_dir = create_tmp_dir().await?;
 
@@ -76,7 +61,15 @@ impl Registry for CratesRegistry {
 impl CratesRegistry {
 	fn find_crate(pkg: &str) -> Result<Crate> {
 		let index = crates_index::Index::new_cargo_default()?;
-		index.crate_(pkg).ok_or(anyhow!("Crate {} not found", pkg))
+		index.crate_(pkg).ok_or(anyhow!("Crate '{}' not found", pkg))
+	}
+
+	fn find_version<'a>(crate_: &'a Crate, version: &str) -> Result<&'a Version> {
+		crate_
+			.versions()
+			.iter()
+			.find(|v| v.version() == version)
+			.ok_or(anyhow!("Version '{}' not found", version))
 	}
 
 	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
