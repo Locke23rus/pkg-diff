@@ -12,6 +12,8 @@ use tokio::{
 	try_join,
 };
 
+static USER_AGENT: &str = "pkg-diff (https://github.com/locke23rus/pkg-diff)";
+
 #[async_trait]
 pub trait Registry {
 	async fn inspect(&self, pkg: &str, version: &str) -> Result<(String, bool)>;
@@ -79,7 +81,8 @@ impl CratesRegistry {
 
 	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
 		let download_url = format!("https://crates.io/api/v1/crates/{}/{}/download", pkg, version);
-		let response = reqwest::get(&download_url).await?;
+		let client = build_http_client()?;
+		let response = client.get(&download_url).send().await?;
 		let bytes = response.bytes().await?;
 		let hash = Sha256::digest(bytes.as_ref());
 
@@ -153,4 +156,8 @@ async fn git_diff(tmp_dir: &PathBuf) -> Result<String> {
 
 	let diff = read_to_string(diff_path).await?;
 	Ok(diff)
+}
+
+fn build_http_client() -> Result<reqwest::Client, reqwest::Error> {
+	reqwest::Client::builder().user_agent(USER_AGENT).build()
 }
