@@ -14,8 +14,14 @@ use crate::{
 
 pub async fn root() -> impl IntoResponse {
 	let template = get_template("root.html");
-	let html = template.render("").unwrap();
-	Html(html).into_response()
+	match template.render("") {
+		Ok(html) => Html(html).into_response(),
+		Err(e) => (
+			StatusCode::INTERNAL_SERVER_ERROR,
+			format!("Failed to render template: {e}"),
+		)
+			.into_response(),
+	}
 }
 
 pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, String)>) -> impl IntoResponse {
