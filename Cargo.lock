@@ -923,8 +923,7 @@ dependencies = [
 [[package]]
 name = "patch"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "660343639d5671fbbee4989420c3d0edf5a66f0a00856371df348c5a12119fa3"
+source = "git+https://github.com/Locke23rus/patch-rs#90ae01fcc5e19c93a499aee0386af6d28cb4d30b"
 dependencies = [
  "chrono",
  "nom",

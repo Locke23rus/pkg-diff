@@ -42,36 +42,11 @@ pub struct File {
 
 impl Chunk {
 	pub fn from_hunk(hunk: patch::Hunk) -> Self {
-		let context: &str;
-		let old_lines_count = hunk
-			.clone()
-			.lines
-			.into_iter()
-			.filter(|line| match line {
-				patch::Line::Add(_) => false,
-				_ => true,
-			})
-			.count() as u64;
-
-		let mut patch_lines = hunk.lines;
-
-		if old_lines_count > hunk.old_range.count {
-			if let patch::Line::Context(text) = patch_lines[0] {
-				context = text;
-				patch_lines.remove(0);
-			} else {
-				context = "";
-			}
-		} else {
-			context = "";
-		}
-
-		let header = format!("@@ -{} +{} @@ {}", hunk.old_range, hunk.new_range, context);
-
 		let mut from_line_number = hunk.old_range.start;
 		let mut to_line_number = hunk.new_range.start;
 
-		let lines: Vec<Line> = patch_lines
+		let lines: Vec<Line> = hunk
+			.lines
 			.into_iter()
 			.map(|patch_line| match patch_line {
 				patch::Line::Add(text) => {
@@ -114,7 +89,10 @@ impl Chunk {
 			})
 			.collect();
 
-		Self { header, lines }
+		Self {
+			header: hunk.header.to_owned(),
+			lines,
+		}
 	}
 }
 
