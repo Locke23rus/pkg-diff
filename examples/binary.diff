@@ -1,0 +1,1046 @@
+diff --git b/.gitignore b/.gitignore
+new file mode 100644
+index 0000000..4fffb2f
+--- /dev/null
++++ b/.gitignore
+@@ -0,0 +1,2 @@
++/target
++/Cargo.lock
+diff --git b/.travis.yml b/.travis.yml
+new file mode 100644
+index 0000000..22763f5
+--- /dev/null
++++ b/.travis.yml
+@@ -0,0 +1,23 @@
++language: rust
++script:
++  - cargo build --verbose
++  - cargo test --verbose
++  - rustdoc --test README.md -L target
++  - cargo doc
++after_success: |
++  [ $TRAVIS_BRANCH = master ] &&
++  [ $TRAVIS_PULL_REQUEST = false ] &&
++  echo '<meta http-equiv=refresh content=0;url=tar/index.html>' > target/doc/index.html &&
++  sudo pip install ghp-import &&
++  ghp-import -n target/doc &&
++  git push -fq https://${TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages &&
++  rm target/doc/index.html &&
++  mv target/doc . &&
++  (curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh)
++env:
++  global:
++    - secure: hz4IbWiy1A9i2a3IThcyqdTS0QBVEcWuZYR9MU+YqBJZ1v4puNsFQxAtes77J7d/gzaJQmIMJ5uiNDLIozHkKTXlvi7blmpDSrMcBQoablqRMRtWlGjbcsgGqQVuBVg8WzVz44FoacRGnI75InNDTVXu/duJTXDGud0b9b28Kro=
++    - secure: ZPYVRKWbPMX1Guo2pOLovbnLNeOMtI0MIqC/4kI+6tG8OMnEixkvuVBHp7++FN3nEHlm1tLJqgaSg5qvcyMl6vfVQnsYzHj8SYwsY3SSZmQomsoc0DByhvfrD8oxat6w8R9J2fk0DtUZ6ihCGFdA15mCZ+1vNhcNmRSv/OfQVz0=
++notifications:
++  email:
++    on_success: never
+diff --git b/Cargo.toml b/Cargo.toml
+new file mode 100644
+index 0000000..ffa1a06
+--- /dev/null
++++ b/Cargo.toml
+@@ -0,0 +1,18 @@
++[package]
++
++name = "tar"
++version = "0.1.0"
++authors = ["Alex Crichton <alex@alexcrichton.com>"]
++homepage = "https://github.com/alexcrichton/tar-rs"
++repository = "https://github.com/alexcrichton/tar-rs"
++documentation = "http://alexcrichton.com/tar-rs"
++license = "MIT/Apache-2.0"
++keywords = ["tar", "tarfile", "encoding"]
++readme = "README.md"
++
++description = """
++A Rust implementation of a TAR file reader and writer. This library does not
++currently handle compression, but it is abstract over all I/O readers and
++writers. Additionally, great lengths are taken to ensure that the entire
++contents are never required to be entirely resident in memory all at once.
++"""
+diff --git b/LICENSE-APACHE b/LICENSE-APACHE
+new file mode 100644
+index 0000000..16fe87b
+--- /dev/null
++++ b/LICENSE-APACHE
+@@ -0,0 +1,201 @@
++                              Apache License
++                        Version 2.0, January 2004
++                     http://www.apache.org/licenses/
++
++TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++1. Definitions.
++
++   "License" shall mean the terms and conditions for use, reproduction,
++   and distribution as defined by Sections 1 through 9 of this document.
++
++   "Licensor" shall mean the copyright owner or entity authorized by
++   the copyright owner that is granting the License.
++
++   "Legal Entity" shall mean the union of the acting entity and all
++   other entities that control, are controlled by, or are under common
++   control with that entity. For the purposes of this definition,
++   "control" means (i) the power, direct or indirect, to cause the
++   direction or management of such entity, whether by contract or
++   otherwise, or (ii) ownership of fifty percent (50%) or more of the
++   outstanding shares, or (iii) beneficial ownership of such entity.
++
++   "You" (or "Your") shall mean an individual or Legal Entity
++   exercising permissions granted by this License.
++
++   "Source" form shall mean the preferred form for making modifications,
++   including but not limited to software source code, documentation
++   source, and configuration files.
++
++   "Object" form shall mean any form resulting from mechanical
++   transformation or translation of a Source form, including but
++   not limited to compiled object code, generated documentation,
++   and conversions to other media types.
++
++   "Work" shall mean the work of authorship, whether in Source or
++   Object form, made available under the License, as indicated by a
++   copyright notice that is included in or attached to the work
++   (an example is provided in the Appendix below).
++
++   "Derivative Works" shall mean any work, whether in Source or Object
++   form, that is based on (or derived from) the Work and for which the
++   editorial revisions, annotations, elaborations, or other modifications
++   represent, as a whole, an original work of authorship. For the purposes
++   of this License, Derivative Works shall not include works that remain
++   separable from, or merely link (or bind by name) to the interfaces of,
++   the Work and Derivative Works thereof.
++
++   "Contribution" shall mean any work of authorship, including
++   the original version of the Work and any modifications or additions
++   to that Work or Derivative Works thereof, that is intentionally
++   submitted to Licensor for inclusion in the Work by the copyright owner
++   or by an individual or Legal Entity authorized to submit on behalf of
++   the copyright owner. For the purposes of this definition, "submitted"
++   means any form of electronic, verbal, or written communication sent
++   to the Licensor or its representatives, including but not limited to
++   communication on electronic mailing lists, source code control systems,
++   and issue tracking systems that are managed by, or on behalf of, the
++   Licensor for the purpose of discussing and improving the Work, but
++   excluding communication that is conspicuously marked or otherwise
++   designated in writing by the copyright owner as "Not a Contribution."
++
++   "Contributor" shall mean Licensor and any individual or Legal Entity
++   on behalf of whom a Contribution has been received by Licensor and
++   subsequently incorporated within the Work.
++
++2. Grant of Copyright License. Subject to the terms and conditions of
++   this License, each Contributor hereby grants to You a perpetual,
++   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++   copyright license to reproduce, prepare Derivative Works of,
++   publicly display, publicly perform, sublicense, and distribute the
++   Work and such Derivative Works in Source or Object form.
++
++3. Grant of Patent License. Subject to the terms and conditions of
++   this License, each Contributor hereby grants to You a perpetual,
++   worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++   (except as stated in this section) patent license to make, have made,
++   use, offer to sell, sell, import, and otherwise transfer the Work,
++   where such license applies only to those patent claims licensable
++   by such Contributor that are necessarily infringed by their
++   Contribution(s) alone or by combination of their Contribution(s)
++   with the Work to which such Contribution(s) was submitted. If You
++   institute patent litigation against any entity (including a
++   cross-claim or counterclaim in a lawsuit) alleging that the Work
++   or a Contribution incorporated within the Work constitutes direct
++   or contributory patent infringement, then any patent licenses
++   granted to You under this License for that Work shall terminate
++   as of the date such litigation is filed.
++
++4. Redistribution. You may reproduce and distribute copies of the
++   Work or Derivative Works thereof in any medium, with or without
++   modifications, and in Source or Object form, provided that You
++   meet the following conditions:
++
++   (a) You must give any other recipients of the Work or
++       Derivative Works a copy of this License; and
++
++   (b) You must cause any modified files to carry prominent notices
++       stating that You changed the files; and
++
++   (c) You must retain, in the Source form of any Derivative Works
++       that You distribute, all copyright, patent, trademark, and
++       attribution notices from the Source form of the Work,
++       excluding those notices that do not pertain to any part of
++       the Derivative Works; and
++
++   (d) If the Work includes a "NOTICE" text file as part of its
++       distribution, then any Derivative Works that You distribute must
++       include a readable copy of the attribution notices contained
++       within such NOTICE file, excluding those notices that do not
++       pertain to any part of the Derivative Works, in at least one
++       of the following places: within a NOTICE text file distributed
++       as part of the Derivative Works; within the Source form or
++       documentation, if provided along with the Derivative Works; or,
++       within a display generated by the Derivative Works, if and
++       wherever such third-party notices normally appear. The contents
++       of the NOTICE file are for informational purposes only and
++       do not modify the License. You may add Your own attribution
++       notices within Derivative Works that You distribute, alongside
++       or as an addendum to the NOTICE text from the Work, provided
++       that such additional attribution notices cannot be construed
++       as modifying the License.
++
++   You may add Your own copyright statement to Your modifications and
++   may provide additional or different license terms and conditions
++   for use, reproduction, or distribution of Your modifications, or
++   for any such Derivative Works as a whole, provided Your use,
++   reproduction, and distribution of the Work otherwise complies with
++   the conditions stated in this License.
++
++5. Submission of Contributions. Unless You explicitly state otherwise,
++   any Contribution intentionally submitted for inclusion in the Work
++   by You to the Licensor shall be under the terms and conditions of
++   this License, without any additional terms or conditions.
++   Notwithstanding the above, nothing herein shall supersede or modify
++   the terms of any separate license agreement you may have executed
++   with Licensor regarding such Contributions.
++
++6. Trademarks. This License does not grant permission to use the trade
++   names, trademarks, service marks, or product names of the Licensor,
++   except as required for reasonable and customary use in describing the
++   origin of the Work and reproducing the content of the NOTICE file.
++
++7. Disclaimer of Warranty. Unless required by applicable law or
++   agreed to in writing, Licensor provides the Work (and each
++   Contributor provides its Contributions) on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++   implied, including, without limitation, any warranties or conditions
++   of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++   PARTICULAR PURPOSE. You are solely responsible for determining the
++   appropriateness of using or redistributing the Work and assume any
++   risks associated with Your exercise of permissions under this License.
++
++8. Limitation of Liability. In no event and under no legal theory,
++   whether in tort (including negligence), contract, or otherwise,
++   unless required by applicable law (such as deliberate and grossly
++   negligent acts) or agreed to in writing, shall any Contributor be
++   liable to You for damages, including any direct, indirect, special,
++   incidental, or consequential damages of any character arising as a
++   result of this License or out of the use or inability to use the
++   Work (including but not limited to damages for loss of goodwill,
++   work stoppage, computer failure or malfunction, or any and all
++   other commercial damages or losses), even if such Contributor
++   has been advised of the possibility of such damages.
++
++9. Accepting Warranty or Additional Liability. While redistributing
++   the Work or Derivative Works thereof, You may choose to offer,
++   and charge a fee for, acceptance of support, warranty, indemnity,
++   or other liability obligations and/or rights consistent with this
++   License. However, in accepting such obligations, You may act only
++   on Your own behalf and on Your sole responsibility, not on behalf
++   of any other Contributor, and only if You agree to indemnify,
++   defend, and hold each Contributor harmless for any liability
++   incurred by, or claims asserted against, such Contributor by reason
++   of your accepting any such warranty or additional liability.
++
++END OF TERMS AND CONDITIONS
++
++APPENDIX: How to apply the Apache License to your work.
++
++   To apply the Apache License to your work, attach the following
++   boilerplate notice, with the fields enclosed by brackets "[]"
++   replaced with your own identifying information. (Don't include
++   the brackets!)  The text should be enclosed in the appropriate
++   comment syntax for the file format. We also recommend that a
++   file or class name and description of purpose be included on the
++   same "printed page" as the copyright notice for easier
++   identification within third-party archives.
++
++Copyright [yyyy] [name of copyright owner]
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++	http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
+diff --git b/LICENSE-MIT b/LICENSE-MIT
+new file mode 100644
+index 0000000..39e0ed6
+--- /dev/null
++++ b/LICENSE-MIT
+@@ -0,0 +1,25 @@
++Copyright (c) 2014 Alex Crichton
++
++Permission is hereby granted, free of charge, to any
++person obtaining a copy of this software and associated
++documentation files (the "Software"), to deal in the
++Software without restriction, including without
++limitation the rights to use, copy, modify, merge,
++publish, distribute, sublicense, and/or sell copies of
++the Software, and to permit persons to whom the Software
++is furnished to do so, subject to the following
++conditions:
++
++The above copyright notice and this permission notice
++shall be included in all copies or substantial portions
++of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
++ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
++TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
++PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
++SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
++CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
++OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
++IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++DEALINGS IN THE SOFTWARE.
+diff --git b/README.md b/README.md
+new file mode 100644
+index 0000000..1deb0ad
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,71 @@
++# tar-rs
++
++[![Build Status](https://travis-ci.org/alexcrichton/tar-rs.svg?branch=master)](https://travis-ci.org/alexcrichton/tar-rs)
++
++[Documentation](http://alexcrichton.com/tar-rs/tar/index.html)
++
++A tar archive reading/writing library for Rust.
++
++```toml
++# Cargo.toml
++[dependencies.tar]
++git = "https://github.com/alexcrichton/tar-rs"
++```
++
++## Reading an archive
++
++```rust,no_run
++# #![allow(unused_must_use)]
++extern crate tar;
++
++use tar::Archive;
++use std::io::{File, SeekSet};
++
++fn main() {
++    let file = File::open(&Path::new("foo.tar")).unwrap();
++    let a = Archive::new(file);
++
++    for file in a.files().unwrap() {
++        // Make sure there wasn't an I/O error
++        let mut file = file.unwrap();
++
++        // Inspect metadata about the file
++        println!("{}", file.filename());
++        println!("{}", file.size());
++
++        // files implement the Reader trait
++        println!("{}", file.read_to_string());
++
++        // files also implement the Seek trait
++        file.seek(0, SeekSet);
++    }
++}
++
++```
++
++## Writing an archive
++
++```rust,no_run
++# #![allow(unused_must_use)]
++extern crate tar;
++
++use tar::Archive;
++use std::io::File;
++
++fn main() {
++    let file = File::create(&Path::new("foo.tar")).unwrap();
++    let a = Archive::new(file);
++
++    a.append("file1.txt", &mut File::open(&Path::new("file1.txt")).unwrap());
++    a.append("file2.txt", &mut File::open(&Path::new("file2.txt")).unwrap());
++    a.finish();
++}
++```
++
++# License
++
++`tar-rs` is primarily distributed under the terms of both the MIT license and
++the Apache License (Version 2.0), with portions covered by various BSD-like
++licenses.
++
++See LICENSE-APACHE, and LICENSE-MIT for details.
+diff --git b/src/lib.rs b/src/lib.rs
+new file mode 100644
+index 0000000..5e13b84
+--- /dev/null
++++ b/src/lib.rs
+@@ -0,0 +1,656 @@
++//! A library for reading and writing TAR archives
++//!
++//! This library provides utilities necessary to manage TAR archives [1]
++//! abstracted over a reader or writer. Great strides are taken to ensure that
++//! an archive is never required to be fully resident in memory, all objects
++//! provide largely a streaming interface to read bytes from.
++//!
++//! [1]: http://en.wikipedia.org/wiki/Tar_%28computing%29
++
++#![feature(macro_rules)]
++#![deny(missing_docs)]
++
++use std::cell::{RefCell, Cell};
++use std::cmp;
++use std::io::{mod, IoResult, IoError, fs};
++use std::iter::{AdditiveIterator, Repeat};
++use std::fmt;
++use std::mem;
++use std::num;
++use std::slice::bytes;
++use std::str;
++
++macro_rules! try_iter( ($me:expr, $e:expr) => (
++    match $e {
++        Ok(e) => e,
++        Err(e) => { $me.done = true; return Some(Err(e)) }
++    }
++) )
++
++/// A top-level representation of an archive file.
++///
++/// This archive can have a file added to it and it can be iterated over.
++pub struct Archive<R> {
++    obj: RefCell<R>,
++    pos: Cell<u64>,
++}
++
++/// An iterator over the files of an archive.
++///
++/// Requires that `R` implement `Seek`.
++pub struct Files<'a, R:'a> {
++    archive: &'a Archive<R>,
++    done: bool,
++    offset: u64,
++}
++
++/// An iterator over the files of an archive.
++///
++/// Does not require that `R` implements `Seek`, but each file must be processed
++/// before the next.
++pub struct FilesMut<'a, R:'a> {
++    archive: &'a Archive<R>,
++    next: u64,
++    done: bool,
++}
++
++/// A read-only view into a file of an archive.
++///
++/// This structure is a windows into a portion of a borrowed archive which can
++/// be inspected. It acts as a file handle by implementing the Reader and Seek
++/// traits. A file cannot be rewritten once inserted into an archive.
++pub struct File<'a, R: 'a> {
++    header: Header,
++    archive: &'a Archive<R>,
++    pos: u64,
++    size: u64,
++    filename: Vec<u8>,
++
++    // Used in read() to make sure we're positioned at the next byte. For a
++    // `Files` iterator these are meaningful while for a `FilesMut` iterator
++    // these are both unused/noops.
++    seek: fn(&File<R>) -> IoResult<()>,
++    tar_offset: u64,
++}
++
++/// Representation of the header of a file in an archive
++#[repr(C)]
++#[allow(missing_docs)]
++pub struct Header {
++    pub name: [u8, ..100],
++    pub mode: [u8, ..8],
++    pub owner_id: [u8, ..8],
++    pub group_id: [u8, ..8],
++    pub size: [u8, ..12],
++    pub mtime: [u8, ..12],
++    pub cksum: [u8, ..8],
++    pub link: [u8, ..1],
++    pub linkname: [u8, ..100],
++
++    // UStar format
++    pub ustar: [u8, ..6],
++    pub ustar_version: [u8, ..2],
++    pub owner_name: [u8, ..32],
++    pub group_name: [u8, ..32],
++    pub dev_major: [u8, ..8],
++    pub dev_minor: [u8, ..8],
++    pub prefix: [u8, ..155],
++    _rest: [u8, ..12],
++}
++
++impl<O> Archive<O> {
++    /// Create a new archive with the underlying object as the reader/writer.
++    ///
++    /// Different methods are available on an archive depending on the traits
++    /// that the underlying object implements.
++    pub fn new(obj: O) -> Archive<O> {
++        Archive { obj: RefCell::new(obj), pos: Cell::new(0) }
++    }
++
++    /// Unwrap this archive, returning the underlying object.
++    pub fn unwrap(self) -> O {
++        self.obj.unwrap()
++    }
++}
++
++impl<R: Seek + Reader> Archive<R> {
++    /// Construct an iterator over the files of this archive.
++    ///
++    /// This function can return an error if any underlying I/O operation files
++    /// while attempting to construct the iterator.
++    ///
++    /// Additionally, the iterator yields `IoResult<File>` instead of `File` to
++    /// handle invalid tar archives as well as any intermittent I/O error that
++    /// occurs.
++    pub fn files<'a>(&'a self) -> IoResult<Files<'a, R>> {
++        try!(self.seek(0));
++        Ok(Files { archive: self, done: false, offset: 0 })
++    }
++
++    fn seek(&self, pos: u64) -> IoResult<()> {
++        if self.pos.get() == pos { return Ok(()) }
++        try!(self.obj.borrow_mut().seek(pos as i64, io::SeekSet));
++        self.pos.set(pos);
++        Ok(())
++    }
++}
++
++impl<R: Reader> Archive<R> {
++    /// Construct an iterator over the files in this archive.
++    ///
++    /// While similar to the `files` iterator, this iterator does not require
++    /// that `R` implement `Seek` and restricts the iterator to processing only
++    /// one file at a time in a streaming fashion.
++    ///
++    /// Note that care must be taken to consider each file within an archive in
++    /// sequence. If files are processed out of sequence (from what the iterator
++    /// returns), then the contents read for each file may be corrupted.
++    pub fn files_mut<'a>(&'a mut self) -> IoResult<FilesMut<'a, R>> {
++        Ok(FilesMut { archive: self, done: false, next: 0 })
++    }
++
++    /// Unpacks this tarball into the specified path
++    pub fn unpack(&mut self, into: &Path) -> IoResult<()> {
++        for file in try!(self.files_mut()) {
++            let mut file = try!(file);
++            let bytes = file.filename_bytes().iter().map(|&b| {
++                if b == b'\\' {b'/'} else {b}
++            }).collect::<Vec<_>>();
++            let dst = into.join(bytes);
++            try!(fs::mkdir_recursive(&dst.dir_path(), io::USER_DIR));
++            {
++                let mut dst = try!(io::File::create(&dst));
++                try!(io::util::copy(&mut file, &mut dst));
++            }
++            try!(fs::chmod(&dst, try!(file.mode()) & io::USER_RWX));
++        }
++        Ok(())
++    }
++
++    fn skip(&self, mut amt: u64) -> IoResult<()> {
++        let mut buf = [0u8, ..4096 * 8];
++        let mut me = self;
++        while amt > 0 {
++            let n = cmp::min(amt, buf.len() as u64);
++            try!(Reader::read(&mut me, buf.slice_to_mut(n as uint)));
++            amt -= n;
++        }
++        Ok(())
++    }
++
++    // Assumes that the underlying reader is positioned at the start of a valid
++    // header to parse.
++    fn next_file(&self, offset: &mut u64, seek: fn(&File<R>) -> IoResult<()>)
++                 -> IoResult<Option<File<R>>> {
++        // If we have 2 or more sections of 0s, then we're done!
++        let mut chunk = [0, ..512];
++        let mut cnt = 0i;
++        let mut me = self;
++        loop {
++            if try!(Reader::read(&mut me, &mut chunk)) != 512 {
++                return Err(bad_archive())
++            }
++            *offset += 512;
++            if chunk.iter().any(|i| *i != 0) { break }
++            cnt += 1;
++            if cnt > 1 { return Ok(None) }
++        }
++
++        let sum = chunk.slice_to(148).iter().map(|i| *i as uint).sum() +
++                  chunk.slice_from(156).iter().map(|i| *i as uint).sum() +
++                  32 * 8;
++
++        let mut ret = File {
++            archive: self,
++            header: unsafe { mem::transmute(chunk) },
++            pos: 0,
++            size: 0,
++            tar_offset: *offset,
++            filename: Vec::new(),
++            seek: seek,
++        };
++
++        // Make sure the checksum is ok
++        let cksum = try!(ret.header.cksum());
++        if sum != cksum { return Err(bad_archive()) }
++
++        // Figure out where the next file is
++        let size = try!(ret.header.size());
++        ret.size = size;
++        let size = (size + 511) & !(512 - 1);
++        *offset += size;
++
++        if ret.header.is_ustar() && ret.header.prefix[0] != 0 {
++            ret.filename.push_all(truncate(&ret.header.prefix));
++            ret.filename.push(b'/');
++        }
++        ret.filename.push_all(truncate(&ret.header.name));
++
++        return Ok(Some(ret));
++    }
++}
++
++impl<W: Writer> Archive<W> {
++    /// Add the file at the specified path to this archive.
++    ///
++    /// This function will insert the file into the archive with the appropriate
++    /// metadata set, returning any I/O error which occurs while writing.
++    ///
++    /// Note that this will not attempt to seek the archive to a valid position,
++    /// so if the archive is in the middle of a read or some other similar
++    /// operation then this may corrupt the archive.
++    pub fn append(&self, path: &str, file: &mut io::File) -> IoResult<()> {
++        let stat = try!(file.stat());
++
++        // Prepare the header, flagging it as a UStar archive
++        let mut header: Header = unsafe { mem::zeroed() };
++        header.ustar = [b'u', b's', b't', b'a', b'r', 0];
++        header.ustar_version = [b'0', b'0'];
++
++        // Prepare the filename
++        let cstr = path.replace(r"\", "/").to_c_str();
++        let path = cstr.as_bytes();
++        let (namelen, prefixlen) = (header.name.len(), header.prefix.len());
++        if path.len() < namelen {
++            bytes::copy_memory(&mut header.name, path);
++        } else if path.len() < namelen + prefixlen {
++            let prefix = path.slice_to(cmp::min(path.len(), prefixlen));
++            let pos = match prefix.iter().rposition(|&b| b == b'/' || b == b'\\') {
++                Some(i) => i,
++                None => return Err(IoError {
++                    kind: io::OtherIoError,
++                    desc: "path cannot be split to be inserted into archive",
++                    detail: None,
++                })
++            };
++            bytes::copy_memory(&mut header.name, path.slice_from(pos + 1));
++            bytes::copy_memory(&mut header.prefix, path.slice_to(pos));
++        } else {
++            return Err(IoError {
++                kind: io::OtherIoError,
++                desc: "path is too long to insert into archive",
++                detail: None,
++            })
++        }
++
++        // Prepare the metadata fields.
++        octal(&mut header.mode, stat.perm.bits()); // TODO: is this right?
++        octal(&mut header.mtime, stat.modified / 1000);
++        octal(&mut header.owner_id, stat.unstable.uid);
++        octal(&mut header.group_id, stat.unstable.gid);
++        octal(&mut header.size, stat.size);
++        octal(&mut header.dev_minor, 0i);
++        octal(&mut header.dev_major, 0i);
++
++        header.link[0] = match stat.kind {
++            io::TypeFile => b'0',
++            io::TypeDirectory => b'5',
++            io::TypeNamedPipe => b'6',
++            io::TypeBlockSpecial => b'4',
++            io::TypeSymlink => b'2',
++            io::TypeUnknown => b' ',
++        };
++
++        // Final step, calculate the checksum
++        let cksum = {
++            let bytes = header.as_bytes();
++            bytes.slice_to(148).iter().map(|i| *i as uint).sum() +
++                bytes.slice_from(156).iter().map(|i| *i as uint).sum() +
++                32 * header.cksum.len()
++        };
++        octal(&mut header.cksum, cksum);
++
++        // Write out the header, the entire file, then pad with zeroes.
++        let mut obj = self.obj.borrow_mut();
++        try!(obj.write(header.as_bytes().as_slice()));
++        try!(io::util::copy(file, &mut *obj));
++        let buf = [0, ..512];
++        let remaining = 512 - (stat.size % 512);
++        if remaining < 512 {
++            try!(obj.write(buf.slice_to(remaining as uint)));
++        }
++
++        // And we're done!
++        return Ok(());
++
++        fn octal<T: fmt::Octal>(dst: &mut [u8], val: T) {
++            let o = format!("{:o}", val);
++            let value = o.as_slice().bytes().rev().chain(Repeat::new(b'0'));
++            for (slot, value) in dst.iter_mut().rev().skip(1).zip(value) {
++                *slot = value;
++            }
++        }
++    }
++
++    /// Finish writing this archive, emitting the termination sections.
++    ///
++    /// This function is required to be called to complete the archive, it will
++    /// be invalid if this is not called.
++    pub fn finish(&self) -> IoResult<()> {
++        let b = [0, ..1024];
++        self.obj.borrow_mut().write(&b)
++    }
++}
++
++impl<'a, R: Seek + Reader> Iterator<IoResult<File<'a, R>>> for Files<'a, R> {
++    fn next(&mut self) -> Option<IoResult<File<'a, R>>> {
++        // If we hit a previous error, or we reached the end, we're done here
++        if self.done { return None }
++
++        // Seek to the start of the next header in the archive
++        try_iter!(self, self.archive.seek(self.offset));
++
++        fn doseek<R: Seek + Reader>(file: &File<R>) -> IoResult<()> {
++            file.archive.seek(file.tar_offset + file.pos)
++        }
++
++        // Parse the next file header
++        match try_iter!(self, self.archive.next_file(&mut self.offset, doseek)) {
++            None => { self.done = true; None }
++            Some(f) => Some(Ok(f)),
++        }
++    }
++}
++
++
++impl<'a, R: Reader> Iterator<IoResult<File<'a, R>>> for FilesMut<'a, R> {
++    fn next(&mut self) -> Option<IoResult<File<'a, R>>> {
++        // If we hit a previous error, or we reached the end, we're done here
++        if self.done { return None }
++
++        // Seek to the start of the next header in the archive
++        let delta = self.next - self.archive.pos.get();
++        try_iter!(self, self.archive.skip(delta));
++
++        // no-op because this reader can't seek
++        fn doseek<R>(_: &File<R>) -> IoResult<()> { Ok(()) }
++
++        // Parse the next file header
++        match try_iter!(self, self.archive.next_file(&mut self.next, doseek)) {
++            None => { self.done = true; None }
++            Some(f) => Some(Ok(f)),
++        }
++    }
++}
++
++impl Header {
++    fn size(&self) -> IoResult<u64> { octal(&self.size) }
++    fn cksum(&self) -> IoResult<uint> { octal(&self.cksum) }
++    fn is_ustar(&self) -> bool {
++        self.ustar.slice_to(5) == b"ustar"
++    }
++    fn as_bytes<'a>(&'a self) -> &'a [u8, ..512] {
++        unsafe { &*(self as *const _ as *const [u8, ..512]) }
++    }
++}
++
++impl<'a, R> File<'a, R> {
++    /// Returns the filename of this archive as a byte array
++    pub fn filename_bytes<'a>(&'a self) -> &'a [u8] {
++        self.filename.as_slice()
++    }
++
++    /// Returns the filename of this archive as a utf8 string.
++    ///
++    /// If `None` is returned, then the filename is not valid utf8
++    pub fn filename<'a>(&'a self) -> Option<&'a str> {
++        str::from_utf8(self.filename_bytes())
++    }
++
++    /// Returns the value of the owner's user ID field
++    pub fn uid(&self) -> IoResult<uint> { octal(&self.header.owner_id) }
++    /// Returns the value of the group's user ID field
++    pub fn gid(&self) -> IoResult<uint> { octal(&self.header.group_id) }
++    /// Returns the last modification time in Unix time format
++    pub fn mtime(&self) -> IoResult<uint> { octal(&self.header.mtime) }
++    /// Returns the mode bits for this file
++    pub fn mode(&self) -> IoResult<io::FilePermission> {
++        octal(&self.header.mode).map(io::FilePermission::from_bits_truncate)
++    }
++
++    /// Classify the type of file that this entry represents
++    pub fn classify(&self) -> io::FileType {
++        match (self.header.is_ustar(), self.header.link[0]) {
++            (_, b'0') => io::TypeFile,
++            (_, b'1') => io::TypeUnknown, // need a hard link enum?
++            (_, b'2') => io::TypeSymlink,
++            (false, _) => io::TypeUnknown, // not technically valid...
++
++            (_, b'3') => io::TypeUnknown, // character special...
++            (_, b'4') => io::TypeBlockSpecial,
++            (_, b'5') => io::TypeDirectory,
++            (_, b'6') => io::TypeNamedPipe,
++            (_, _) => io::TypeUnknown, // not technically valid...
++        }
++    }
++
++    /// Returns the username of the owner of this file, if present
++    pub fn username_bytes<'a>(&'a self) -> Option<&'a [u8]> {
++        if self.header.is_ustar() {
++            Some(truncate(&self.header.owner_name))
++        } else {
++            None
++        }
++    }
++    /// Returns the group name of the owner of this file, if present
++    pub fn groupname_bytes<'a>(&'a self) -> Option<&'a [u8]> {
++        if self.header.is_ustar() {
++            Some(truncate(&self.header.group_name))
++        } else {
++            None
++        }
++    }
++    /// Return the username of the owner of this file, if present and if valid
++    /// utf8
++    pub fn username<'a>(&'a self) -> Option<&'a str> {
++        self.username_bytes().and_then(str::from_utf8)
++    }
++    /// Return the group name of the owner of this file, if present and if valid
++    /// utf8
++    pub fn groupname<'a>(&'a self) -> Option<&'a str> {
++        self.groupname_bytes().and_then(str::from_utf8)
++    }
++
++    /// Returns the device major number, if present.
++    ///
++    /// This field is only present in UStar archives. A value of `None` means
++    /// that this archive is not a UStar archive, while a value of `Some`
++    /// represents the attempt to decode the field in the header.
++    pub fn device_major(&self) -> Option<IoResult<uint>> {
++        if self.header.is_ustar() {
++            Some(octal(&self.header.dev_major))
++        } else {
++            None
++        }
++    }
++    /// Returns the device minor number, if present.
++    ///
++    /// This field is only present in UStar archives. A value of `None` means
++    /// that this archive is not a UStar archive, while a value of `Some`
++    /// represents the attempt to decode the field in the header.
++    pub fn device_minor(&self) -> Option<IoResult<uint>> {
++        if self.header.is_ustar() {
++            Some(octal(&self.header.dev_minor))
++        } else {
++            None
++        }
++    }
++
++    /// Returns raw access to the header of this file in the archive.
++    pub fn raw_header<'a>(&'a self) -> &'a Header { &self.header }
++
++    /// Returns the size of the file in the archive.
++    pub fn size(&self) -> u64 { self.size }
++}
++
++impl<'a, R: Reader> Reader for &'a Archive<R> {
++    fn read(&mut self, into: &mut [u8]) -> IoResult<uint> {
++        self.obj.borrow_mut().read(into).map(|i| {
++            self.pos.set(self.pos.get() + i as u64);
++            i
++        })
++    }
++}
++
++impl<'a, R: Reader> Reader for File<'a, R> {
++    fn read(&mut self, into: &mut [u8]) -> IoResult<uint> {
++        if self.size == self.pos {
++            return Err(io::standard_error(io::EndOfFile))
++        }
++
++        try!((self.seek)(self));
++        let amt = cmp::min((self.size - self.pos) as uint, into.len());
++        let amt = try!(Reader::read(&mut self.archive, into.slice_to_mut(amt)));
++        self.pos += amt as u64;
++        Ok(amt)
++    }
++}
++
++impl<'a, R: Reader + Seek> Seek for File<'a, R> {
++    fn tell(&self) -> IoResult<u64> { Ok(self.pos) }
++    fn seek(&mut self, pos: i64, style: io::SeekStyle) -> IoResult<()> {
++        let next = match style {
++            io::SeekSet => pos as i64,
++            io::SeekCur => self.pos as i64 + pos,
++            io::SeekEnd => self.size as i64 + pos,
++        };
++        if next < 0 {
++            Err(io::standard_error(io::OtherIoError))
++        } else if next as u64 > self.size {
++            Err(io::standard_error(io::OtherIoError))
++        } else {
++            self.pos = next as u64;
++            Ok(())
++        }
++    }
++}
++
++fn bad_archive() -> IoError {
++    IoError {
++        kind: io::OtherIoError,
++        desc: "invalid tar archive",
++        detail: None,
++    }
++}
++
++fn octal<T: num::FromStrRadix>(slice: &[u8]) -> IoResult<T> {
++    let num = match str::from_utf8(truncate(slice)) {
++        Some(n) => n,
++        None => return Err(bad_archive()),
++    };
++    match num::from_str_radix(num, 8) {
++        Some(n) => Ok(n),
++        None => Err(bad_archive())
++    }
++}
++
++fn truncate<'a>(slice: &'a [u8]) -> &'a [u8] {
++    match slice.iter().position(|i| *i == 0) {
++        Some(i) => slice.slice_to(i),
++        None => slice,
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use std::io;
++    use std::io::{BufReader, MemWriter, MemReader, File, TempDir};
++    use super::Archive;
++
++    #[test]
++    fn simple() {
++        let rdr = BufReader::new(include_bin!("tests/simple.tar"));
++        let ar = Archive::new(rdr);
++        for file in ar.files().unwrap() {
++            file.unwrap();
++        }
++    }
++
++    #[test]
++    fn reading_files() {
++        let rdr = BufReader::new(include_bin!("tests/reading_files.tar"));
++        let ar = Archive::new(rdr);
++        let mut files = ar.files().unwrap();
++        let mut a = files.next().unwrap().unwrap();
++        let mut b = files.next().unwrap().unwrap();
++        assert!(files.next().is_none());
++
++        assert_eq!(a.filename(), Some("a"));
++        assert_eq!(b.filename(), Some("b"));
++        assert_eq!(a.read_to_string().unwrap().as_slice(),
++                   "a\na\na\na\na\na\na\na\na\na\na\n");
++        assert_eq!(b.read_to_string().unwrap().as_slice(),
++                   "b\nb\nb\nb\nb\nb\nb\nb\nb\nb\nb\n");
++        a.seek(0, io::SeekSet).unwrap();
++        assert_eq!(a.read_to_string().unwrap().as_slice(),
++                   "a\na\na\na\na\na\na\na\na\na\na\n");
++    }
++
++    #[test]
++    fn writing_files() {
++        let wr = MemWriter::new();
++        let ar = Archive::new(wr);
++        let td = TempDir::new("tar-rs").unwrap();
++
++        let path = td.path().join("test");
++        File::create(&path).write(b"test").unwrap();
++
++        ar.append("test2", &mut File::open(&path).unwrap()).unwrap();
++        ar.finish().unwrap();
++
++        let rd = MemReader::new(ar.unwrap().unwrap());
++        let ar = Archive::new(rd);
++        let mut files = ar.files().unwrap();
++        let mut f = files.next().unwrap().unwrap();
++        assert!(files.next().is_none());
++
++        assert_eq!(f.filename(), Some("test2"));
++        assert_eq!(f.size(), 4);
++        assert_eq!(f.read_to_string().unwrap().as_slice(), "test");
++    }
++
++    #[test]
++    fn large_filename() {
++        let ar = Archive::new(MemWriter::new());
++        let td = TempDir::new("tar-rs").unwrap();
++
++        let path = td.path().join("test");
++        File::create(&path).write(b"test").unwrap();
++
++        let filename = "abcd/".repeat(50);
++        ar.append(filename.as_slice(), &mut File::open(&path).unwrap()).unwrap();
++        ar.finish().unwrap();
++
++        let too_long = "abcd".repeat(200);
++        ar.append(too_long.as_slice(), &mut File::open(&path).unwrap())
++          .err().unwrap();
++
++        let rd = MemReader::new(ar.unwrap().unwrap());
++        let ar = Archive::new(rd);
++        let mut files = ar.files().unwrap();
++        let mut f = files.next().unwrap().unwrap();
++        assert!(files.next().is_none());
++
++        assert_eq!(f.filename(), Some(filename.as_slice()));
++        assert_eq!(f.size(), 4);
++        assert_eq!(f.read_to_string().unwrap().as_slice(), "test");
++    }
++
++    #[test]
++    fn reading_files_mut() {
++        let rdr = BufReader::new(include_bin!("tests/reading_files.tar"));
++        let mut ar = Archive::new(rdr);
++        let mut files = ar.files_mut().unwrap();
++        let mut a = files.next().unwrap().unwrap();
++        assert_eq!(a.filename(), Some("a"));
++        assert_eq!(a.read_to_string().unwrap().as_slice(),
++                   "a\na\na\na\na\na\na\na\na\na\na\n");
++        assert_eq!(a.read_to_string().unwrap().as_slice(), "");
++        let mut b = files.next().unwrap().unwrap();
++
++        assert_eq!(b.filename(), Some("b"));
++        assert_eq!(b.read_to_string().unwrap().as_slice(),
++                   "b\nb\nb\nb\nb\nb\nb\nb\nb\nb\nb\n");
++        assert!(files.next().is_none());
++    }
++}
+diff --git b/src/tests/reading_files.tar b/src/tests/reading_files.tar
+new file mode 100644
+index 0000000..67e79ff
+Binary files /dev/null and b/src/tests/reading_files.tar differ
+diff --git b/src/tests/simple.tar b/src/tests/simple.tar
+new file mode 100644
+index 0000000..747ddf9
+Binary files /dev/null and b/src/tests/simple.tar differ
