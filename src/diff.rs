@@ -66,10 +66,7 @@ impl Chunk {
 			context = "";
 		}
 
-		let header = format!(
-			"@@ -{},{} +{},{} @@ {}",
-			hunk.old_range.start, hunk.old_range.count, hunk.new_range.start, hunk.new_range.count, context
-		);
+		let header = format!("@@ -{} +{} @@ {}", hunk.old_range, hunk.new_range, context);
 
 		let mut from_line_number = hunk.old_range.start;
 		let mut to_line_number = hunk.new_range.start;
