@@ -29,7 +29,7 @@ pub async fn inspect(Path((registry, pkg, version)): Path<(String, String, Strin
 		Ok(registry) => match registry.inspect(&pkg, &version).await {
 			Ok((diff, yanked)) => match Patch::from_multiple(&diff) {
 				Ok(patches) => {
-					let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
+					let files: Vec<File> = patches.into_iter().map(File::from_patch).collect();
 					let ctx = context! { pkg, version, yanked, files };
 					let template = get_template("inspect.html");
 					match template.render(ctx) {
@@ -55,7 +55,7 @@ pub async fn compare(Path((registry, pkg, v1, v2)): Path<(String, String, String
 		Ok(registry) => match registry.compare(&pkg, &v1, &v2).await {
 			Ok((diff, v1_yanked, v2_yanked)) => match Patch::from_multiple(&diff) {
 				Ok(patches) => {
-					let files: Vec<File> = patches.into_iter().map(|patch| File::from_patch(patch)).collect();
+					let files: Vec<File> = patches.into_iter().map(File::from_patch).collect();
 					let template = get_template("compare.html");
 					let ctx = context! { pkg, v1, v1_yanked, v2, v2_yanked, files };
 					match template.render(ctx) {

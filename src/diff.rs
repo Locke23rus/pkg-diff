@@ -119,7 +119,7 @@ impl File {
 			);
 		}
 
-		let chunks: Vec<Chunk> = patch.hunks.into_iter().map(|hunk| Chunk::from_hunk(hunk)).collect();
+		let chunks: Vec<Chunk> = patch.hunks.into_iter().map(Chunk::from_hunk).collect();
 		let digest: String = format!("{:x}", md5::compute(name.clone()));
 
 		Self {
