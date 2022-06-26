@@ -61,7 +61,7 @@ impl Registry for CratesRegistry {
 impl CratesRegistry {
 	fn find_crate(pkg: &str) -> Result<Crate> {
 		let index = crates_index::Index::new_cargo_default()?;
-		index.crate_(pkg).ok_or(anyhow!("Crate '{}' not found", pkg))
+		index.crate_(pkg).ok_or_else(|| anyhow!("Crate '{}' not found", pkg))
 	}
 
 	fn find_version<'a>(crate_: &'a Crate, version: &str) -> Result<&'a Version> {
@@ -69,7 +69,7 @@ impl CratesRegistry {
 			.versions()
 			.iter()
 			.find(|v| v.version() == version)
-			.ok_or(anyhow!("Version '{}' not found", version))
+			.ok_or_else(|| anyhow!("Version '{}' not found", version))
 	}
 
 	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
