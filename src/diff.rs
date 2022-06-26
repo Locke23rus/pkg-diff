@@ -112,11 +112,7 @@ impl File {
 			name = patch.new.path[2..].to_string();
 		} else {
 			status = "renamed".to_string();
-			name = format!(
-				"{} -> {}",
-				patch.old.path[2..].to_string(),
-				patch.new.path[2..].to_string()
-			);
+			name = format!("{} -> {}", &patch.old.path[2..], &patch.new.path[2..]);
 		}
 
 		let chunks: Vec<Chunk> = patch.hunks.into_iter().map(Chunk::from_hunk).collect();
