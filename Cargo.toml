@@ -10,7 +10,7 @@ axum = "0.5.15"
 tokio = { version = "1.17.0", features = ["full"] }
 minijinja = { version = "0.19.1", features = ["source"] }
 lazy_static = "1.4.0"
-patch = { git = "https://github.com/Locke23rus/patch-rs" }
+patch = "0.7.0"
 serde = { version = "1.0.136", features = ["derive"] }
 md5 = "0.7.0"
 crates-index = "0.18.8"

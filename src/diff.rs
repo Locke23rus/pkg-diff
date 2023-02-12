@@ -45,6 +45,7 @@ impl Chunk {
 		let mut from_line_number = hunk.old_range.start;
 		let mut to_line_number = hunk.new_range.start;
 
+		let header = format!("@@ -{} +{} @@{}", hunk.old_range, hunk.new_range, hunk.range_hint);
 		let lines: Vec<Line> = hunk
 			.lines
 			.into_iter()
@@ -89,10 +90,7 @@ impl Chunk {
 			})
 			.collect();
 
-		Self {
-			header: hunk.header.to_owned(),
-			lines,
-		}
+		Self { header, lines }
 	}
 }
 
