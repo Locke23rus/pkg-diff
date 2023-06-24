@@ -10,7 +10,7 @@ axum = "0.5.15"
 tokio = { version = "1.17.0", features = ["full"] }
 minijinja = { version = "1.0.3" }
 patch = "0.7.0"
-serde = { version = "1.0.136", features = ["derive"] }
+serde = { version = "1.0.164", features = ["derive"] }
 md5 = "0.7.0"
 crates-index = "0.18.8"
 rand = "0.8.5"
