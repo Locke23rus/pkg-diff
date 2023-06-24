@@ -9,7 +9,6 @@ edition = "2021"
 axum = "0.5.15"
 tokio = { version = "1.17.0", features = ["full"] }
 minijinja = { version = "0.34.0", features = ["source"] }
-lazy_static = "1.4.0"
 patch = "0.7.0"
 serde = { version = "1.0.136", features = ["derive"] }
 md5 = "0.7.0"
