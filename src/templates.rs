@@ -18,6 +18,6 @@ fn create_env() -> Environment<'static> {
 	env
 }
 
-pub fn get_template(name: &str) -> Template<'static> {
+pub fn get_template(name: &str) -> Template<'static, 'static> {
 	ENV.get_or_init(create_env).get_template(name).unwrap()
 }
