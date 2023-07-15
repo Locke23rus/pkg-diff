@@ -69,7 +69,23 @@ impl CratesRegistry {
 			.versions()
 			.iter()
 			.find(|v| v.version() == version)
-			.ok_or_else(|| anyhow!("Version '{}' not found", version))
+			.ok_or_else(|| {
+				anyhow!(
+					"Version '{}' not found\nAvailable versions:\n{}",
+					version,
+					crate_
+						.versions()
+						.iter()
+						.map(|v| format!(
+							"<a href=\"/crates/{}/{}\">{}</a>",
+							crate_.name(),
+							v.version(),
+							v.version()
+						))
+						.collect::<Vec<_>>()
+						.join("\n")
+				)
+			})
 	}
 
 	async fn download_and_verify_crate(pkg: &str, version: &str, checksum: &[u8; 32]) -> Result<Bytes> {
