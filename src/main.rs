@@ -10,8 +10,8 @@ use std::net::SocketAddr;
 async fn main() {
 	let app = Router::new()
 		.route("/", get(routes::index))
-		.route("/inspect/:registry/:pkg/:version", get(routes::inspect))
-		.route("/compare/:registry/:pkg/:v1/:v2", get(routes::compare))
+		.route("/:registry/:pkg/:v1", get(routes::inspect))
+		.route("/:registry/:pkg/:v1/:v2", get(routes::compare))
 		.fallback(routes::handler_404);
 	let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
 	axum::Server::bind(&addr).serve(app.into_make_service()).await.unwrap();
